@@ -1,0 +1,33 @@
+{
+  "files": {
+    "main.js": "/static/js/main.d3447112.js",
+    "static/js/513.4d560d5e.js": "/static/js/513.4d560d5e.js",
+    "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
+    "static/media/Ionicons.ttf": "/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
+    "static/media/FontAwesome.ttf": "/static/media/FontAwesome.1e59d2330b4c6deb84b3.ttf",
+    "static/media/OpenSans-Bold.ttf": "/static/media/OpenSans-Bold.11d42620ac71ab231c13.ttf",
+    "static/media/OpenSans-Light.ttf": "/static/media/OpenSans-Light.8f628bef23d5842e448b.ttf",
+    "static/media/OpenSans-Regular.ttf": "/static/media/OpenSans-Regular.ac568e1f1b394b9786bd.ttf",
+    "static/media/professionals.png": "/static/media/professionals.c0dc69eaf841e051f712.png",
+    "static/media/Foundation.ttf": "/static/media/Foundation.c0cbb004854f9c746f89.ttf",
+    "static/media/family.png": "/static/media/family.d874266fee876b89d516.png",
+    "static/media/student.png": "/static/media/student.dd9dc02bbfe443eba3d5.png",
+    "static/media/female.png": "/static/media/female.c0c90dd7b91bad08517d.png",
+    "static/media/male.png": "/static/media/male.c18ffcce2c78f1e72cf6.png",
+    "favicon.ico": "/favicon.ico",
+    "static/media/argon.ttf": "/static/media/argon.93f129b55ef2da3729e9.ttf",
+    "index.html": "/index.html",
+    "static/media/close.android.png": "/static/media/close.android.0d17e0283034f44be356.png",
+    "favicon-32.png": "/favicon-32.png",
+    "static/media/close.ios.png": "/static/media/close.ios.81d829c35aa7afa6d25d.png",
+    "favicon-16.png": "/favicon-16.png",
+    "serve.json": "/serve.json",
+    "manifest.json": "/manifest.json",
+    "main.d3447112.js.map": "/static/js/main.d3447112.js.map",
+    "513.4d560d5e.js.map": "/static/js/513.4d560d5e.js.map"
+  },
+  "entrypoints": [
+    "static/js/513.4d560d5e.js",
+    "static/js/main.d3447112.js"
+  ]
+}
