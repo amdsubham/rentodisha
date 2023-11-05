@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
     StyleSheet,
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     ActivityIndicator,
     ScrollView,
@@ -97,30 +97,28 @@ export default function Authentication() {
     const sendOTP = async () => {
         try {
             setIsLoading(true);
-            // Make an API request to mtalkz to send OTP
-            const response = await fetch('http://msg.mtalkz.com/V2/http-api-post.php', {
-                method: 'POST',
+
+            const postData = {
+                phoneNumber: formattedValue,
+                assignedOtp: generateOtp(),
+            };
+            const response = await axios.post(`${API_BASE_URL}/user/sendotp`, postData, {
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    apikey: 'yX99qQMNlPz0OkCY',
-                    senderid: 'MTAMOI',
-                    number: formattedValue,
-                    message: `Your OTP- One Time Password is ${generateOtp()} to authenticate your login with #4r3mk23 Powered By mTalkz`,
-                    format: 'json',
-                }),
+                }
             });
-            const data = await response.json();
+
+            const { data } = response;
+            // Check the response from your own server's endpoint
             if (data.status === 'OK') {
                 fetchUserExistsStatus();
                 setScreen(2);
-                // After OTP verification, check if the phone number exists in the database
             } else {
                 alert('Failed to send OTP. Please try again.');
             }
         } catch (error) {
-            console.log('error', error);
+            // Handle errors
+            console.error('Error sending OTP:', error.response?.data || error.message);
             alert('Error sending OTP. Please check your network connection.');
         } finally {
             setIsLoading(false);
@@ -172,7 +170,7 @@ export default function Authentication() {
                             <TextAnimator
                                 content={animatedTexts[currentTextIndex]}
                                 textStyle={styles.textStyle}
-                                duration={500}
+                                duration={1500}
                                 onFinish={handleAnimationComplete}
                             />
                         </View>)}
@@ -417,6 +415,6 @@ const styles = StyleSheet.create({
         fontFamily: 'open-sans-regular',
         marginBottom: 14,
         color: '#FFFFFF',
-        top: 100,
-    }
+        marginTop: 20, // Added this line to create a gap of 50
+    },
 });
