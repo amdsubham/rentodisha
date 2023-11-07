@@ -8,9 +8,13 @@ import { useUser } from '../context/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../firebase/firebase';
+const DEFAULT_LOCATION = {
+  label: 'Patia',
+  value: 'Patia',
+}
 const CustomHeader = ({ navigation, onSettingPress, showBack = false }) => {
   const { setUserInfoToStore, useToken } = useUser()
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(DEFAULT_LOCATION);
   const [allLocations, setLocations] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

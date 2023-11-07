@@ -21,16 +21,16 @@ const AdDetailsScreen = ({ route }) => {
     const { userInfo } = useUser();
     const { ad } = route.params;
     const flatmatesData = ad?.flatmates || []
-    const firebaseId = ad.user.firebaseId;
+    const firebaseId = ad.firebaseId;
     const navigation = useNavigation();
     const [userDetails, setUserDetails] = useState(null);
     const [showDirectMessageButton, setShowDirectMessageButton] = useState(false);
     const isPostedByCurrentUser = firebaseId === userInfo?.firebaseId;
-
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
                 const userDoc = await getDoc(doc(db, 'user_profiles', firebaseId));
+
                 if (userDoc.exists()) {
                     setUserDetails(userDoc.data());
                     setShowDirectMessageButton(true);
@@ -74,7 +74,7 @@ const AdDetailsScreen = ({ route }) => {
                 <View style={styles.offerContainer}>
                     <FontAwesome name="check" size={24} color="white" style={styles.trustIcon} />
 
-                    <Text style={styles.offerText}>Verified By Rentyfy</Text>
+                    <Text style={styles.offerText}>Verified User</Text>
                 </View>
 
                 <Text style={styles.description}>{ad.adDescription}</Text>
@@ -110,7 +110,12 @@ const AdDetailsScreen = ({ route }) => {
                     </View>)
                 }
             </ScrollView>
-            {!isPostedByCurrentUser && (
+            {isPostedByCurrentUser ? (
+                // Display a message indicating that the advertisement is posted by the current user
+                <Text style={styles.postedByCurrentUserMessage}>
+                    This advertisement is posted by you.
+                </Text>
+            ) : showDirectMessageButton && (
                 <View style={styles.footer}>
                     <View style={styles.priceContainer}>
                         <Text style={styles.discountedPrice}>₹{ad.price}/month</Text>
@@ -121,7 +126,9 @@ const AdDetailsScreen = ({ route }) => {
                         </Text>
                     </TouchableOpacity>
                 </View>
+
             )}
+
         </SafeAreaView>
     );
 };

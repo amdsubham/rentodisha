@@ -19,6 +19,8 @@ const Home = () => {
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
     const [bannersLoading, setBannersLoading] = useState(true);
+    const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'male', 'female'
+    const [filteredAds, setFilteredAds] = useState([]);
     useEffect(() => {
         fetchAds();
         fetchBanners()
@@ -41,6 +43,25 @@ const Home = () => {
         }
     };
 
+    const handleGenderFilterChange = (newFilter) => {
+        setGenderFilter(newFilter);
+    };
+
+
+    const filterAds = () => {
+        let filtered;
+        switch (genderFilter) {
+            case 'male':
+                filtered = ads.filter(ad => ad.isMaleOnly === true);
+                break;
+            case 'female':
+                filtered = ads.filter(ad => ad.isMaleOnly === false);
+                break;
+            default:
+                filtered = ads;
+        }
+        setFilteredAds(filtered);
+    };
     const fetchBanners = async () => {
         try {
             setBannersLoading(true);
@@ -68,13 +89,45 @@ const Home = () => {
         setRefreshing(true);
         fetchAds();
     }, []);
-
+    useEffect(() => {
+        filterAds();
+    }, [ads, genderFilter]);
     return (
         <>
             <View style={styles.container}>
                 {!bannersLoading && banners.length > 0 && <BannerCarousel data={banners} />}
+
+                <View style={styles.filterButtonsContainer}>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterButton,
+                            genderFilter === 'all' ? styles.filterButtonActive : {},
+                        ]}
+                        onPress={() => handleGenderFilterChange('all')}
+                    >
+                        <Text style={genderFilter === 'all' ? styles.filterTextActive : styles.filterText}>All</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterButton,
+                            genderFilter === 'male' ? styles.filterButtonActive : {},
+                        ]}
+                        onPress={() => handleGenderFilterChange('male')}
+                    >
+                        <Text style={genderFilter === 'male' ? styles.filterTextActive : styles.filterText}>Male Only</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.filterButton,
+                            genderFilter === 'female' ? styles.filterButtonActive : {},
+                        ]}
+                        onPress={() => handleGenderFilterChange('female')}
+                    >
+                        <Text style={genderFilter === 'female' ? styles.filterTextActive : styles.filterText}>Female Only</Text>
+                    </TouchableOpacity>
+                </View>
                 <FlatList
-                    data={ads}
+                    data={filteredAds.length ? filteredAds : ads}
                     keyExtractor={(item) => item._id}
                     renderItem={renderAdCard}
                     contentContainerStyle={styles.adList}
@@ -91,24 +144,6 @@ const Home = () => {
         </>
     );
 };
-
-// const BannerCarousel = ({ data }) => {
-//     const renderItem = ({ item }) => (
-//         <Image source={{ uri: item }} style={styles.bannerImage} />
-//     );
-
-//     return (
-//         <Carousel
-//             data={data}
-//             renderItem={renderItem}
-//             sliderWidth={width}
-//             itemWidth={width}
-//             loop
-//             autoplay
-//             style={{}}
-//         />
-//     );
-// };
 
 const AnimatedCard = ({ item, onPress }) => {
     const scale = useSharedValue(1);
@@ -158,7 +193,13 @@ const AnimatedCard = ({ item, onPress }) => {
                 <LinearGradient colors={['#005AAA', '#007DBC']} style={styles.gradient}>
                     <Animated.Image source={{ uri: item.images[0] }} style={[styles.adImage, animatedImageStyles]} />
                     <View style={styles.adDetails}>
-                        <Text style={styles.adTitle}>{item.adTitle}</Text>
+                        <Text
+                            style={styles.adTitle}
+                            numberOfLines={2}
+                            ellipsizeMode='tail'
+                        >
+                            {item.adTitle}
+                        </Text>
                         <View style={styles.adInfo}>
                             <Text style={styles.adPrice}>Price: ₹{item.price}</Text>
                             <Text style={styles.adBedrooms}>{item.bedrooms} {item.location}</Text>
@@ -236,6 +277,33 @@ const styles = StyleSheet.create({
     adBedrooms: {
         fontSize: 12,
         color: '#999',
+    },
+
+    filterButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        padding: 10,
+        //marginBottom: 20,
+    },
+    filterButton: {
+        borderWidth: 1,
+        borderColor: '#007DBC',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        marginHorizontal: 5,
+        backgroundColor: 'white',
+    },
+    filterButtonActive: {
+        backgroundColor: '#007DBC',
+    },
+    filterText: {
+        color: '#007DBC',
+        textAlign: 'center',
+    },
+    filterTextActive: {
+        color: 'white',
+        textAlign: 'center',
     },
 });
 

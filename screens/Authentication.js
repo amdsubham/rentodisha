@@ -79,7 +79,10 @@ export default function Authentication() {
 
     const generateOtp = () => {
         const otp =
-            phoneNumber === '7008105210'
+            (phoneNumber === '7008105210' || phoneNumber === '7777711111'
+                || phoneNumber === '7777722222' || phoneNumber === '7777733333'
+                || phoneNumber === '7777744444' || phoneNumber === '7777755555'
+            )
                 ? 121212
                 : Math.floor(100000 + Math.random() * 900000);
         setAssignedOtp(otp);

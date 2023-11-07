@@ -50,6 +50,7 @@ const MessageScreen = ({ route, navigation }) => {
   const [webviewUrl, setWebviewUrl] = useState(
     "https://subham-routray.mojo.page/odicult-subscription"
   );
+  console.log("messages", messages)
   const isWeb = Platform.OS === 'web';
   const combinedUid = generateId(userInfo.firebaseId, userDetails.id);
 
@@ -97,7 +98,7 @@ const MessageScreen = ({ route, navigation }) => {
         )
     );
     fetchStateThing()
-  }, [userDetails, db]);
+  }, [db]);
 
 
   const scrollFlatListToEnd = () => {

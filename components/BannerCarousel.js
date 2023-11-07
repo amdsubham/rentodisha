@@ -5,7 +5,7 @@ import Carousel from 'react-native-banner-carousel';
 import { analytics } from '../firebase/firebase';
 
 const BannerWidth = Dimensions.get('window').width;
-const BannerHeight = 260; // Adjust the height as needed
+const BannerHeight = 200; // Adjust the height as needed
 
 const BannerCarousel = ({ data }) => {
     const renderPage = (image, index) => (
