@@ -181,7 +181,8 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
                 updateProfileToFirebase({ name, pic: image, email, isEdit })
                 setUserInfoToStore({
                     name, image, email,
-                    gender, phone: phoneNumber,
+                    gender,
+                    phone: userToken.toString(),
                     firebaseId: userInfo.firebaseId,
                     tenantType,
                     subscriptionStartDate: isEdit ? userInfo.subscriptionStartDate : 'NA',

@@ -57,59 +57,60 @@ const AdDetailsScreen = ({ route }) => {
 
     return (
         <SafeAreaView style={styles.flexContainer}>
+            <View style={{ height: "90%", backgroundColor: '#f8f9fa', }}>
+                <LinearGradient colors={['#007DBC', '#005AAA']} style={styles.header}>
+                    <TouchableOpacity onPress={handleBackButton}>
+                        <Ionicons name="arrow-back" size={24} color="white" />
+                    </TouchableOpacity>
 
-            <LinearGradient colors={['#007DBC', '#005AAA']} style={styles.header}>
-                <TouchableOpacity onPress={handleBackButton}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-
-            </LinearGradient>
+                </LinearGradient>
 
 
-            <ScrollView>
-                <Image source={{ uri: ad.images[0] }} style={styles.villaImage} />
-                <Text style={styles.villaName}>{ad.adTitle}</Text>
-                <Text style={styles.location}>{ad.location}</Text>
+                <ScrollView>
+                    <Image source={{ uri: ad.images[0] }} style={styles.villaImage} />
+                    <Text style={styles.villaName}>{ad.adTitle}</Text>
+                    <Text style={styles.location}>{ad.location}</Text>
 
-                <View style={styles.offerContainer}>
-                    <FontAwesome name="check" size={24} color="white" style={styles.trustIcon} />
+                    <View style={styles.offerContainer}>
+                        <FontAwesome name="check" size={24} color="white" style={styles.trustIcon} />
 
-                    <Text style={styles.offerText}>Verified User</Text>
-                </View>
-
-                <Text style={styles.description}>{ad.adDescription}</Text>
-                <View style={styles.amenitiesContainer}>
-                    {/* <Text style={styles.amenitiesTitle}>Facilities available</Text> */}
-                    <View style={styles.amenitiesList}>
-                        {amenitiesMapping.map(amenity => {
-                            if (ad[amenity.key]) {
-                                return (
-                                    <View style={styles.amenityItem} key={amenity.key}>
-                                        <Ionicons name={amenity.icon} size={24} color="white" />
-                                        <Text style={styles.amenityLabel}>{amenity.label}</Text>
-                                    </View>
-                                );
-                            }
-                            return null;
-                        })}
+                        <Text style={styles.offerText}>Verified User</Text>
                     </View>
-                </View>
-                {
-                    flatmatesData.length > 0 &&
-                    (<View style={styles.flatmatesSection}>
-                        <Text style={styles.title}>Flatmates</Text>
-                        <View style={styles.flatmatesGrid}>
-                            {flatmatesData.map((flatmate, index) => (
-                                <View key={index} style={styles.flatmateCard}>
-                                    <Image source={{ uri: flatmate.image }} style={styles.flatmateImage} />
-                                    <Text style={styles.flatmateName}>{flatmate.name}</Text>
-                                    <Text style={styles.flatmateOccupation}>{flatmate.occupation}</Text>
-                                </View>
-                            ))}
+
+                    <Text style={styles.description}>{ad.adDescription}</Text>
+                    <View style={styles.amenitiesContainer}>
+                        {/* <Text style={styles.amenitiesTitle}>Facilities available</Text> */}
+                        <View style={styles.amenitiesList}>
+                            {amenitiesMapping.map(amenity => {
+                                if (ad[amenity.key]) {
+                                    return (
+                                        <View style={styles.amenityItem} key={amenity.key}>
+                                            <Ionicons name={amenity.icon} size={24} color="white" />
+                                            <Text style={styles.amenityLabel}>{amenity.label}</Text>
+                                        </View>
+                                    );
+                                }
+                                return null;
+                            })}
                         </View>
-                    </View>)
-                }
-            </ScrollView>
+                    </View>
+                    {
+                        flatmatesData.length > 0 &&
+                        (<View style={styles.flatmatesSection}>
+                            <Text style={styles.title}>Flatmates</Text>
+                            <View style={styles.flatmatesGrid}>
+                                {flatmatesData.map((flatmate, index) => (
+                                    <View key={index} style={styles.flatmateCard}>
+                                        <Image source={{ uri: flatmate.image }} style={styles.flatmateImage} />
+                                        <Text style={styles.flatmateName}>{flatmate.name}</Text>
+                                        <Text style={styles.flatmateOccupation}>{flatmate.occupation}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>)
+                    }
+                </ScrollView>
+            </View>
             {isPostedByCurrentUser ? (
                 // Display a message indicating that the advertisement is posted by the current user
                 <Text style={styles.postedByCurrentUserMessage}>

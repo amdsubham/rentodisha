@@ -16,7 +16,10 @@ const ReceiverMessage = ({ message }) => {
     <View style={styles.container}>
       <Image
         style={styles.image}
-        source={{ uri: message.photoURL }}
+        source={{
+          uri: message.photoURL ||
+            'https://i.pinimg.com/736x/ff/a0/9a/ffa09aec412db3f54deadf1b3781de2a.jpg',
+        }}
       />
       <View style={styles.messageBubble}>
         <Text style={styles.messageText}>{message.message}</Text>
