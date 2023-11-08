@@ -9,8 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { analytics, db } from '../firebase/firebase';
 import BannerCarousel from '../components/BannerCarousel';
 import { logEvent } from 'firebase/analytics';
-
-const { width } = Dimensions.get('window');
+import SkeletonLoader from "expo-skeleton-loader";
+const { height, width } = Dimensions.get('window');
 
 const Home = () => {
     const { userToken, userInfo } = useUser();
@@ -47,7 +47,17 @@ const Home = () => {
         setGenderFilter(newFilter);
     };
 
+    const skeletonBanner = () => (
+        <SkeletonLoader
+            boneColor="#B0B3B8"
+            highlightColor="#E0E0E0"
+        >
 
+            <SkeletonLoader.Item
+                style={{ width, height: height / 4, marginVertical: 10 }}
+            />
+        </SkeletonLoader>
+    );
     const filterAds = () => {
         let filtered;
         switch (genderFilter) {
@@ -95,8 +105,8 @@ const Home = () => {
     return (
         <>
             <View style={styles.container}>
+                {bannersLoading && skeletonBanner()}
                 {!bannersLoading && banners.length > 0 && <BannerCarousel data={banners} />}
-
                 <View style={styles.filterButtonsContainer}>
                     <TouchableOpacity
                         style={[

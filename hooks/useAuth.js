@@ -10,6 +10,7 @@ import { ActivityIndicator } from 'react-native';
 import { auth, db } from '../firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUser } from '../context/UserContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const AuthContext = createContext({
 })
@@ -79,7 +80,18 @@ const AuthProvider = ({ children }) => {
         logOut,
       }}
     >
-      {loadingLogin ? <ActivityIndicator /> : children}
+      {loadingLogin ?
+        <LinearGradient colors={['#007DBC', '#005AAA']}
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: "100%",
+            width: "100%"
+          }}>
+          <ActivityIndicator size="large" color="white" />
+        </LinearGradient>
+        : children}
     </AuthContext.Provider>
   );
 };

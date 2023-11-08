@@ -169,7 +169,7 @@ const HomeTabNavigator = () => {
                             <MaterialCommunityIcons
                                 name={focused ? 'plus-circle' : 'plus-circle'}
                                 size={55}
-                                color={focused ? '#007DBC' : "#28a745"}
+                                color={focused ? '#007DBC' : "rgb(128, 128, 128)"}
                             />
                         ),
                     }}

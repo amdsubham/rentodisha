@@ -1,20 +1,34 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Image, StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons'; // Make sure to install this library
-
-const ChatHeader = ({ userDetails, navigation }) => {
+import AnimatedNumbers from 'react-native-animated-numbers';
+import WebAnimatedNumbers from 'react-animated-numbers';
+const ChatHeader = ({ userDetails, navigation, coins }) => {
     const handleBackPress = () => {
         navigation.goBack();
     };
-
+    const AnimatedNumberComponent = Platform.select({
+        web: WebAnimatedNumbers,
+        default: AnimatedNumbers,
+    });
     return (
         <SafeAreaView>
             <View style={styles.chatHeaderContainer} >
+
                 <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 {userDetails?.image && (<Image source={{ uri: userDetails.image }} style={styles.chatHeaderImage} />)}
                 <Text style={styles.chatHeaderText}>{userDetails.name}</Text>
+                <View style={styles.coinsContainer}>
+                    <Text style={styles.coinsTitle}>Message Left</Text>
+                    <AnimatedNumberComponent
+                        animateToNumber={coins}
+                        fontStyle={styles.coinsValue}
+                        includeComma
+                        frameStyle={{ flexDirection: 'row', alignItems: 'flex-end' }}
+                    />
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -22,6 +36,7 @@ const ChatHeader = ({ userDetails, navigation }) => {
 
 const styles = StyleSheet.create({
     chatHeaderContainer: {
+
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,
@@ -42,6 +57,23 @@ const styles = StyleSheet.create({
     },
     backButton: {
         marginRight: 10,
+    },
+    coinsTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FFFFFF', // Assuming the title is also white
+        marginRight: 8, // Add some space between the title and the number
+    },
+    coinsValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFD700', // A gold-like color for the coins value
+    },
+    coinsContainer: {
+        marginLeft: 'auto', // This pushes the coins container to the extreme right
+        flexDirection: 'row',
+        alignItems: 'center',
+        right: 15
     },
 });
 

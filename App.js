@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 import { AuthProvider } from './hooks/useAuth';
 import UpdateAppModal from './components/UpdateAppModal'; // Import the modal component
 import API_BASE_URL from './services/config';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 
 import * as Font from 'expo-font';
 
@@ -40,7 +40,9 @@ const App = () => {
         console.error('Error fetching app update status:', error);
       }
     };
-    fetchAppUpdateStatus();
+    if (Platform.OS !== 'web') {
+      fetchAppUpdateStatus();
+    }
   }, []);
 
   const handleAppUpdate = () => {

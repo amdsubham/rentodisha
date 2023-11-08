@@ -13,7 +13,7 @@ import {
   Modal,
   StyleSheet,
   ActivityIndicator,
-  Alert
+  Alert,
 } from "react-native";
 import { WebView } from 'react-native-webview';
 import axios from "axios"; // Import Axios for making API requests
@@ -37,10 +37,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ChatHeader from "../components/ChatHeader";
 import MessageSuggestion from "../components/MessageSuggestion";
 import { logEvent } from "firebase/analytics";
-
+import CoinModal from "../components/CoinModal";
 const MessageScreen = ({ route, navigation }) => {
   const flatListRef = useRef();
-  const [userInfo, setUserInfo] = useState({});
+  const [userInfo, setUserInfo] = useState({ coins: 2 });
   const { userInfo: userInfoFromAsync, setUserInfoToStore, fetchUserDetails } = useUser();
   const { params: { userDetails } } = route;
   const [input, setInput] = useState("");
@@ -49,6 +49,8 @@ const MessageScreen = ({ route, navigation }) => {
   const [combinedUid, setCombinedUid] = useState([]);
   const [scrollToEnd, setScrollToEnd] = useState(false); // To scroll to the end of the chat
   const [showModal, setShowModal] = useState(false); // State for the modal
+  const [showOneCointModal, setOneCointModal] = useState(false);
+
   const [webviewUrl, setWebviewUrl] = useState(
     "https://subham-routray.mojo.page/odicult-subscription"
   );
@@ -58,6 +60,15 @@ const MessageScreen = ({ route, navigation }) => {
   useEffect(() => {
     fetchUserInitialDetails();
   }, [db, combinedUid]);
+
+  useEffect(() => {
+    if (userInfo?.coins === 1) {
+      setOneCointModal(true)
+    }
+    if (userInfo?.coins === 0) {
+      setShowModal(true)
+    }
+  }, [userInfo?.coins]);
 
   useEffect(() => {
     if (messages && messages.length > 0) {
@@ -168,7 +179,7 @@ const MessageScreen = ({ route, navigation }) => {
         if (userInfo.coins > 0) {
           const updatedCoins = Math.max(userInfo.coins - 1, 0);  // Deduct one coin
           await axios.put(`${API_BASE_URL}/user/updateUserCoins/${userInfo.phoneNumber}`, {
-            coins: updatedCoins,
+            coins: userInfo.coins,
           });
 
           // Update the local state with the new coins value
@@ -201,8 +212,6 @@ const MessageScreen = ({ route, navigation }) => {
     }
   };
 
-
-
   const handleModalClose = () => {
     logEvent(analytics, "purchase banner changed");
     fetchUserDetails()
@@ -221,9 +230,14 @@ const MessageScreen = ({ route, navigation }) => {
     );
   }
 
+  const handleTakePremium = () => {
+    setOneCointModal(false)
+    setShowModal(true)
+
+  }
   return (
     <>
-      <ChatHeader userDetails={userDetails} navigation={navigation} />
+      <ChatHeader coins={userInfo?.coins} userDetails={userDetails} navigation={navigation} />
       <LinearGradient colors={['#dddddd', '#005AAA']} style={styles.container}>
         <Pressable onPress={Keyboard.dismiss}>
           <FlatList
@@ -293,6 +307,13 @@ const MessageScreen = ({ route, navigation }) => {
           </View>
         </View>
       </Modal>
+      <CoinModal
+        coins={userInfo?.coins}
+        onTakePremium={handleTakePremium}
+        isVisible={showOneCointModal}
+        onClose={() => setOneCointModal(false)}
+
+      />
     </>
   );
 };
