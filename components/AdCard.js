@@ -16,7 +16,7 @@ const AdCard = ({ ad, onEdit, onDelete, onClaim }) => {
                     <Text style={styles.buttonText}>Delete</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => onClaim(ad)}>
-                    <Text style={styles.buttonText}>Claim Reward</Text>
+                    <Text style={styles.buttonText}>Claim </Text>
                 </TouchableOpacity>
             </View>
         </View>
