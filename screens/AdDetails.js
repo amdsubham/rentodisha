@@ -62,21 +62,16 @@ const AdDetailsScreen = ({ route }) => {
                     <TouchableOpacity onPress={handleBackButton}>
                         <Ionicons name="arrow-back" size={24} color="white" />
                     </TouchableOpacity>
-
                 </LinearGradient>
-
-
-                <ScrollView>
+                <ScrollView contentContainerStyle={styles.scrollViewContent}>
                     <Image source={{ uri: ad.images[0] }} style={styles.villaImage} />
                     <Text style={styles.villaName}>{ad.adTitle}</Text>
                     <Text style={styles.location}>{ad.location}</Text>
-
                     <View style={styles.offerContainer}>
                         <FontAwesome name="check" size={24} color="white" style={styles.trustIcon} />
 
                         <Text style={styles.offerText}>Verified User</Text>
                     </View>
-
                     <Text style={styles.description}>{ad.adDescription}</Text>
                     <View style={styles.amenitiesContainer}>
                         {/* <Text style={styles.amenitiesTitle}>Facilities available</Text> */}
@@ -373,7 +368,10 @@ const styles = StyleSheet.create({
     trustIcon: {
         marginRight: 5,  // Some space between the icon and text
         bottom: 2,
-    }
+    },
+    scrollViewContent: {
+        paddingBottom: 20, // Add some bottom padding to accommodate for any absolutely positioned elements
+    },
 });
 
 
