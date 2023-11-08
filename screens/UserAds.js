@@ -40,6 +40,13 @@ const UserAds = () => {
         navigation.navigate('PostAd', { ad });
     };
 
+    const renderEmptyListComponent = () => (
+        <View style={styles.emptyListContainer}>
+            <Text style={styles.emptyListText}>You have no ads posted yet.</Text>
+        </View>
+    );
+
+
     const handleDelete = async (adId) => {
         setIsLoading(true);
 
@@ -117,6 +124,7 @@ const UserAds = () => {
                         <AdCard ad={item} onEdit={handleEdit} onDelete={() => handleDeleteAd(item)} onClaim={handleClaim} />
                     </TouchableOpacity>
                 )}
+                ListEmptyComponent={renderEmptyListComponent}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
@@ -181,15 +189,6 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 10,
     },
-    closeButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-    },
-    closeButtonText: {
-        color: 'blue',
-        textDecorationLine: 'underline',
-    },
     image: {
         width: '100%',
         height: 200,
@@ -209,20 +208,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
     },
-    cancelButton: {
-        marginRight: 10,
-    },
-    cancelButtonText: {
-        color: 'blue',
-        textDecorationLine: 'underline',
-    },
     confirmButton: {
         backgroundColor: 'red',
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 5,
     },
+    emptyListContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    emptyListText: {
+        fontSize: 16,
+        color: '#999',
+    },
     confirmButtonText: {
+        color: 'white',
+    },
+    cancelButton: {
+        backgroundColor: '#3182CE',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 5,
+        marginRight: 10,
+    },
+    cancelButtonText: {
+        color: 'white',
+    },
+    closeButton: {
+        backgroundColor: '#3182CE',
+        padding: 8,
+        borderRadius: 5,
+    },
+    closeButtonText: {
         color: 'white',
     },
 });

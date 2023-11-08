@@ -16,7 +16,7 @@ const AdCard = ({ ad, onEdit, onDelete, onClaim }) => {
                     <Text style={styles.buttonText}>Delete</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => onClaim(ad)}>
-                    <Text style={styles.buttonText}>Claim</Text>
+                    <Text style={styles.buttonText}>Claim Reward</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     },
     button: {
         flex: 1,
-        backgroundColor: 'blue',
+        backgroundColor: '#3182CE',
         borderRadius: 5,
         padding: 10,
         alignItems: 'center',
