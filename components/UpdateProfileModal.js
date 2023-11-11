@@ -244,7 +244,7 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
     ];
 
     return (
-        <Modal visible={false} transparent={true} animationType="slide">
+        <Modal visible={isVisible} transparent={true} animationType="slide">
             <View style={styles.modalContainer}>
                 <LinearGradient // Use LinearGradient for the gradient background
                     colors={['#007DBC', '#005CA1']} // Gradient colors
