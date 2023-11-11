@@ -7,7 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useUser } from '../context/UserContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import API_BASE_URL, { BASE_URL } from '../services/config';
+import API_BASE_URL, { DOMAIN_URL } from '../services/config';
 import * as FileSystem from 'expo-file-system';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Import for larger icon
 
@@ -61,7 +61,7 @@ const AdDetailsWithoutAuthentication = ({ route }) => {
 
 
     const onShare = async () => {
-        const shareMessage = `${ad?.adTitle} At Price ₹${ad?.price}\n\n Check this out!! ✨🏠🌟\n\n` + `${BASE_URL}/ads/${ad?._id}`;
+        const shareMessage = `${ad?.adTitle} At Price ₹${ad?.price}\n\n Check this out!! ✨🏠🌟\n\n` + `${DOMAIN_URL}/ads/${ad?._id}`;
 
         if (Platform.OS === 'web') {
             // Attempt to use the Web Share API if available

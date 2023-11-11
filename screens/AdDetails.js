@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Platform, Clipboard, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { db } from '../firebase/firebase';
@@ -8,6 +8,7 @@ import { useUser } from '../context/UserContext';
 import { FontAwesome } from '@expo/vector-icons';
 import CustomHeader from '../components/CustomHeader';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BASE_URL, DOMAIN_URL } from '../services/config';
 
 const amenitiesMapping = [
     { key: 'isFurnished', label: 'Furnished', icon: 'bed-outline' },
@@ -55,6 +56,31 @@ const AdDetailsScreen = ({ route }) => {
         navigation.goBack();
     };
 
+    const onShare = async () => {
+        const shareMessage = `${ad?.adTitle} At Price ₹${ad?.price}\n\n Check this out!! ✨🏠🌟\n\n` + `${DOMAIN_URL}/ads/${ad?._id}`;
+        if (Platform.OS === 'web') {
+            // Attempt to use the Web Share API if available
+            if (navigator.share) {
+                navigator.share({
+                    title: ad?.adTitle,
+                    text: shareMessage,
+                    url: ad?.images[0],
+                }).catch(error => console.log('Error sharing', error));
+            } else {
+                Clipboard.setString(shareMessage);
+                Alert.alert('Link copied to clipboard');
+            }
+        } else {
+            try {
+                await Share.share({
+                    message: shareMessage,
+                    url: ad?.images[0], // Include this only if it's a local file
+                });
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+    };
     return (
         <SafeAreaView style={styles.flexContainer}>
             <View style={{ height: "90%", backgroundColor: '#f8f9fa', }}>
@@ -65,6 +91,9 @@ const AdDetailsScreen = ({ route }) => {
                 </LinearGradient>
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
                     <Image source={{ uri: ad.images[0] }} style={styles.villaImage} />
+                    <TouchableOpacity style={styles.shareIcon} onPress={onShare}>
+                        <Ionicons name="share-social" size={24} color="white" />
+                    </TouchableOpacity>
                     <Text style={styles.villaName}>{ad.adTitle}</Text>
                     <Text style={styles.location}>{ad.location}</Text>
                     <View style={styles.offerContainer}>
@@ -371,6 +400,16 @@ const styles = StyleSheet.create({
     },
     scrollViewContent: {
         paddingBottom: 20, // Add some bottom padding to accommodate for any absolutely positioned elements
+    },
+    shareIcon: {
+        position: 'absolute',
+        right: 10,
+        top: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        padding: 8,
+        borderRadius: 25,
+        width: 40,
+        zIndex: 1, // Add this line
     },
 });
 
