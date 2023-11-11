@@ -64,7 +64,7 @@ const AdDetailsScreen = ({ route }) => {
                 navigator.share({
                     title: ad?.adTitle,
                     text: shareMessage,
-                    url: ad?.images[0],
+                    //url: ad?.images[0],
                 }).catch(error => console.log('Error sharing', error));
             } else {
                 Clipboard.setString(shareMessage);
@@ -74,7 +74,7 @@ const AdDetailsScreen = ({ route }) => {
             try {
                 await Share.share({
                     message: shareMessage,
-                    url: ad?.images[0], // Include this only if it's a local file
+                    // url: ad?.images[0], // Include this only if it's a local file
                 });
             } catch (error) {
                 console.error(error.message);
