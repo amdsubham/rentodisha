@@ -244,7 +244,7 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
     ];
 
     return (
-        <Modal visible={isVisible} transparent={true} animationType="slide">
+        <Modal visible={false} transparent={true} animationType="slide">
             <View style={styles.modalContainer}>
                 <LinearGradient // Use LinearGradient for the gradient background
                     colors={['#007DBC', '#005CA1']} // Gradient colors
@@ -289,6 +289,7 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
                         <TextInput
                             style={styles.input}
                             placeholder="Email"
+                            textContentType="emailAddress"
                             placeholderTextColor={"#E7E0C3"}
                             value={email}
                             onChangeText={handleEmailChange}

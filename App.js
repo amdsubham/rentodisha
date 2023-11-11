@@ -7,7 +7,7 @@ import { UserProvider, useUser } from './context/UserContext';
 import Toast from 'react-native-toast-message';
 import { AuthProvider } from './hooks/useAuth';
 import UpdateAppModal from './components/UpdateAppModal'; // Import the modal component
-import API_BASE_URL from './services/config';
+import API_BASE_URL, { BASE_URL } from './services/config';
 import { Linking, Platform } from 'react-native';
 
 import * as Font from 'expo-font';
@@ -27,6 +27,7 @@ const App = () => {
     });
     setFontsLoaded(true)
   }, []);
+
   useEffect(() => {
     const fetchAppUpdateStatus = async () => {
       try {
@@ -45,6 +46,16 @@ const App = () => {
     }
   }, []);
 
+  const linking = {
+    prefixes: ['http://localhost:19006', 'yourapp://'],
+    config: {
+      screens: {
+        Authentication: 'ads/:adIdAuth',
+        AdDetailsWithoutAuthentication: 'ads/:adId',
+      },
+    },
+  };
+
   const handleAppUpdate = () => {
     Linking.canOpenURL(action)
       .then((supported) => {
@@ -61,9 +72,11 @@ const App = () => {
 
   return (
     <>
-      <Toast />
+
       <AuthProvider>
-        <NavigationContainer>
+
+        <NavigationContainer linking={linking}>
+          <Toast />
           {userToken ? <AppStack /> : <AuthStack />}
         </NavigationContainer>
       </AuthProvider>
