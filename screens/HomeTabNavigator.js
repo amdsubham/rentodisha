@@ -14,8 +14,9 @@ import Chat from './Chat';
 import CustomHeader from '../components/CustomHeader';
 const Tab = createBottomTabNavigator();
 
-const HomeTabNavigator = () => {
+const HomeTabNavigator = ({ route }) => {
     const navigation = useNavigation();
+    const adIds = route.params?.adIdm
     const { logout, userToken, fetchUserDetails } = useUser();
     const { logOut } = AuthOpen();
     const [isModalVisible, setModalVisible] = React.useState(false);
@@ -68,6 +69,14 @@ const HomeTabNavigator = () => {
             </Pressable>
         </Modal>
     );
+
+    useEffect(() => {
+        if (adIds) {
+            setTimeout(() => {
+                navigation.navigate('SingleScreenAd', { adIds });
+            }, 100);
+        }
+    }, [adIds]);
 
     useEffect(() => {
         fetchUserExistsStatus()

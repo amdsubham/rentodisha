@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, RefreshControl, Dimensions, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { collection, getDocs, getFirestore, query } from 'firebase/firestore'
+import { collection, getDocs, query } from 'firebase/firestore'
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useUser } from '../context/UserContext';
 import API_BASE_URL from '../services/config';
@@ -13,7 +13,7 @@ import SkeletonLoader from "expo-skeleton-loader";
 const { height, width } = Dimensions.get('window');
 
 const Home = () => {
-    const { userToken, userInfo } = useUser();
+    const [isLoading, setIsLoading] = useState(true);
     const [ads, setAds] = useState([]);
     const [banners, setBanners] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -29,10 +29,12 @@ const Home = () => {
 
     const fetchAds = async () => {
         try {
+            setIsLoading(true)
             const response = await fetch(`${API_BASE_URL}/rentpost/getAllPosts`);
             if (response.ok) {
                 const data = await response.json();
                 setAds(data);
+                setIsLoading(false)
             } else {
                 console.error('Failed to fetch ad posts');
             }
@@ -40,6 +42,7 @@ const Home = () => {
             console.error('Error fetching ad posts:', error);
         } finally {
             setRefreshing(false);
+            setIsLoading(false)
         }
     };
 
@@ -92,16 +95,26 @@ const Home = () => {
 
     const handleAdPress = (ad) => {
         logEvent(analytics, "Post OnClick", (ad));
-        navigation.navigate('SingleScreenAd', { ad });
+        navigation.navigate('SingleScreenAd', { adIds: ad?._id });
     };
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         fetchAds();
+        fetchBanners();
     }, []);
+
     useEffect(() => {
         filterAds();
     }, [ads, genderFilter]);
+
+    if (isLoading && refreshing && bannersLoading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+        )
+    }
     return (
         <>
             <View style={styles.container}>
@@ -146,7 +159,7 @@ const Home = () => {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            tintColor="#007DBC"
+                            tintColor="white"
                         />
                     }
                 />
@@ -288,7 +301,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#999',
     },
-
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#005AAA', // Adjust the color and opacity to match your gradient
+    },
     filterButtonsContainer: {
         flexDirection: 'row',
         justifyContent: 'center',

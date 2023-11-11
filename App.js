@@ -50,8 +50,7 @@ const App = () => {
     prefixes: [DOMAIN_URL, 'yourapp://'],
     config: {
       screens: {
-        Authentication: 'ads/:adIdAuth',
-        AdDetailsWithoutAuthentication: 'ads/:adId',
+        HomeTabNavigator: 'ads/:adIdm',
       },
     },
   };

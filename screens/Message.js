@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { WebView } from 'react-native-webview';
 import axios from "axios"; // Import Axios for making API requests
@@ -50,7 +51,7 @@ const MessageScreen = ({ route, navigation }) => {
   const [scrollToEnd, setScrollToEnd] = useState(false); // To scroll to the end of the chat
   const [showModal, setShowModal] = useState(false); // State for the modal
   const [showOneCointModal, setOneCointModal] = useState(false);
-
+  const [refreshing, setRefreshing] = useState(false);
   const [webviewUrl, setWebviewUrl] = useState(
     "https://subham-routray.mojo.page/odicult-subscription"
   );
@@ -230,6 +231,13 @@ const MessageScreen = ({ route, navigation }) => {
     );
   }
 
+
+  // const onRefresh = useCallback(() => {
+  //   setRefreshing(true);
+  //   // fetchUserInitialDetails();
+  //   //fetchMessages();
+  // }, []);
+
   const handleTakePremium = () => {
     setOneCointModal(false)
     setShowModal(true)
@@ -254,6 +262,13 @@ const MessageScreen = ({ route, navigation }) => {
               )
             }
             onContentSizeChange={scrollFlatListToEnd}
+          // refreshControl={
+          //   <RefreshControl
+          //     refreshing={refreshing}
+          //     onRefresh={onRefresh}
+          //     tintColor="white"
+          //   />
+          // }
           />
         </Pressable>
       </LinearGradient>

@@ -1,32 +1,91 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Platform, Clipboard, Alert, Share } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Share, Platform, Clipboard, Alert, ActivityIndicator, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { db } from '../firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useUser } from '../context/UserContext';
 import { FontAwesome } from '@expo/vector-icons';
-import CustomHeader from '../components/CustomHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BASE_URL, DOMAIN_URL } from '../services/config';
+import API_BASE_URL, { DOMAIN_URL } from '../services/config';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Import for larger icon
 
 const amenitiesMapping = [
     { key: 'isFurnished', label: 'Furnished', icon: 'bed-outline' },
     { key: 'hasAttachedBathroom', label: 'Attached Bathroom', icon: 'water-outline' },
     { key: 'isMaleOnly', label: 'Male Only', icon: 'male-outline' },
     { key: 'isBachelorsAllowed', label: 'Bachelors Allowed', icon: 'people-outline' },
-    // Add other attributes and their corresponding labels and icons here...
 ];
 
 const AdDetailsScreen = ({ route }) => {
+    const [isLoading, setIsLoading] = useState(true);
     const { userInfo } = useUser();
-    const { ad } = route.params;
-    const flatmatesData = ad?.flatmates || []
-    const firebaseId = ad.firebaseId;
+    const adId = route.params?.adIds;
     const navigation = useNavigation();
+    const [ad, setAd] = useState();
+    const [firebaseId, setFirebaseId] = useState(ad?.firebaseId);
+    const [flatmatesData, setFlatmatesData] = useState(ad?.flatmates);
     const [userDetails, setUserDetails] = useState(null);
     const [showDirectMessageButton, setShowDirectMessageButton] = useState(false);
     const isPostedByCurrentUser = firebaseId === userInfo?.firebaseId;
+    const [isAdAvailable, setIsAdAvailable] = useState(true);
+    useEffect(() => {
+        const fetchPostDetails = async () => {
+            setIsLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/rentpost/getPostsById/${adId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setAd(data)
+                    setFirebaseId(data?.firebaseId)
+                    setFlatmatesData(data?.flatmates || [])
+                    setIsAdAvailable(true);
+                } else {
+                    setIsAdAvailable(false);
+                    console.error('Failed to fetch user ads');
+                }
+            } catch (error) {
+                console.error('Error fetching user ads:', error);
+            } finally {
+                setIsLoading(false); // Stop loading
+            }
+        };
+
+        if (adId) {
+            fetchPostDetails();
+        }
+    }, [adId]);
+
+
+    const onShare = async () => {
+        const shareMessage = `${ad?.adTitle} At Price ₹${ad?.price}\n\n Check this out!! ✨🏠🌟\n\n` + `${DOMAIN_URL}/ads/${ad?._id}`;
+
+        if (Platform.OS === 'web') {
+            // Attempt to use the Web Share API if available
+            if (navigator.share) {
+                navigator.share({
+                    title: ad?.adTitle,
+                    text: shareMessage,
+                    // url: ad?.images[0],
+                }).catch(error => console.log('Error sharing', error));
+            } else {
+                Clipboard.setString(shareMessage);
+                Alert.alert('Link copied to clipboard');
+            }
+        } else {
+            // Mobile sharing
+            try {
+                await Share.share({
+                    message: shareMessage,
+                    //url: ad?.images[0], // Include this only if it's a local file
+                });
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+    };
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
@@ -46,6 +105,7 @@ const AdDetailsScreen = ({ route }) => {
         }
     }, [firebaseId]);
 
+
     const handleDirectMessage = () => {
         navigation.navigate('Message', {
             userDetails
@@ -56,70 +116,65 @@ const AdDetailsScreen = ({ route }) => {
         navigation.goBack();
     };
 
-    const onShare = async () => {
-        const shareMessage = `${ad?.adTitle} At Price ₹${ad?.price}\n\n Check this out!! ✨🏠🌟\n\n` + `${DOMAIN_URL}/ads/${ad?._id}`;
-        if (Platform.OS === 'web') {
-            // Attempt to use the Web Share API if available
-            if (navigator.share) {
-                navigator.share({
-                    title: ad?.adTitle,
-                    text: shareMessage,
-                    //url: ad?.images[0],
-                }).catch(error => console.log('Error sharing', error));
-            } else {
-                Clipboard.setString(shareMessage);
-                Alert.alert('Link copied to clipboard');
-            }
-        } else {
-            try {
-                await Share.share({
-                    message: shareMessage,
-                    // url: ad?.images[0], // Include this only if it's a local file
-                });
-            } catch (error) {
-                console.error(error.message);
-            }
-        }
-    };
+    if (isLoading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+        )
+    }
+    if (!isAdAvailable) {
+        return (
+            <LinearGradient colors={['#007DBC', '#005AAA']} style={styles.soldContainer}>
+                <MaterialIcons name="error-outline" size={60} color="white" />
+                <Text style={styles.soldMessage}>This ad has been sold</Text>
+                <TouchableOpacity onPress={handleBackButton} style={styles.seeMoreButtonContainer}>
+
+                    <Text style={styles.seeMoreButtonText}> See More</Text>
+                    <Ionicons name="arrow-forward" size={24} color="white" />
+                </TouchableOpacity>
+            </LinearGradient>
+        );
+    }
     return (
         <SafeAreaView style={styles.flexContainer}>
             <View style={{ height: "90%", backgroundColor: '#f8f9fa', }}>
                 <LinearGradient colors={['#007DBC', '#005AAA']} style={styles.header}>
-                    <TouchableOpacity onPress={handleBackButton}>
+                    <TouchableOpacity onPress={handleBackButton} style={styles.seeMoreButtonContainer}>
                         <Ionicons name="arrow-back" size={24} color="white" />
                     </TouchableOpacity>
                 </LinearGradient>
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                    <Image source={{ uri: ad.images[0] }} style={styles.villaImage} />
+                    <Image source={{ uri: ad?.images[0] }} style={styles.villaImage} />
                     <TouchableOpacity style={styles.shareIcon} onPress={onShare}>
                         <Ionicons name="share-social" size={24} color="white" />
                     </TouchableOpacity>
-                    <Text style={styles.villaName}>{ad.adTitle}</Text>
-                    <Text style={styles.location}>{ad.location}</Text>
+                    <Text style={styles.villaName}>{ad?.adTitle}</Text>
+                    <Text style={styles.location}>{ad?.location}</Text>
                     <View style={styles.offerContainer}>
                         <FontAwesome name="check" size={24} color="white" style={styles.trustIcon} />
 
                         <Text style={styles.offerText}>Verified User</Text>
                     </View>
-                    <Text style={styles.description}>{ad.adDescription}</Text>
-                    <View style={styles.amenitiesContainer}>
-                        {/* <Text style={styles.amenitiesTitle}>Facilities available</Text> */}
-                        <View style={styles.amenitiesList}>
-                            {amenitiesMapping.map(amenity => {
-                                if (ad[amenity.key]) {
-                                    return (
-                                        <View style={styles.amenityItem} key={amenity.key}>
-                                            <Ionicons name={amenity.icon} size={24} color="white" />
-                                            <Text style={styles.amenityLabel}>{amenity.label}</Text>
-                                        </View>
-                                    );
-                                }
-                                return null;
-                            })}
-                        </View>
-                    </View>
+                    <Text style={styles.description}>{ad?.adDescription}</Text>
+                    {ad &&
+                        (<View style={styles.amenitiesContainer}>
+                            <View style={styles.amenitiesList}>
+                                {amenitiesMapping.map(amenity => {
+                                    if (ad[amenity.key]) {
+                                        return (
+                                            <View style={styles.amenityItem} key={amenity.key}>
+                                                <Ionicons name={amenity.icon} size={24} color="white" />
+                                                <Text style={styles.amenityLabel}>{amenity.label}</Text>
+                                            </View>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                            </View>
+                        </View>)}
                     {
-                        flatmatesData.length > 0 &&
+                        (ad && flatmatesData.length > 0) &&
                         (<View style={styles.flatmatesSection}>
                             <Text style={styles.title}>Flatmates</Text>
                             <View style={styles.flatmatesGrid}>
@@ -143,7 +198,7 @@ const AdDetailsScreen = ({ route }) => {
             ) : showDirectMessageButton && (
                 <View style={styles.footer}>
                     <View style={styles.priceContainer}>
-                        <Text style={styles.discountedPrice}>₹{ad.price}/month</Text>
+                        <Text style={styles.discountedPrice}>₹{ad?.price}/month</Text>
                     </View>
                     <TouchableOpacity onPress={handleDirectMessage} style={styles.bookNowButton}>
                         <Text style={styles.bookNowButtonText}>
@@ -158,8 +213,6 @@ const AdDetailsScreen = ({ route }) => {
     );
 };
 
-// Styles have been merged from both sections
-
 const styles = StyleSheet.create({
     flexContainer: {
         flex: 1,
@@ -168,6 +221,12 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#005AAA', // Adjust the color and opacity to match your gradient
     },
     footer: {
         borderTopWidth: 1,
@@ -401,6 +460,13 @@ const styles = StyleSheet.create({
     scrollViewContent: {
         paddingBottom: 20, // Add some bottom padding to accommodate for any absolutely positioned elements
     },
+    seeMoreButtonContainer: {
+        flexDirection: 'row', // Align items in a row
+        alignItems: 'center', // Center items vertically
+        padding: 10,
+        borderRadius: 5,
+        // Add any additional styling as needed
+    },
     shareIcon: {
         position: 'absolute',
         right: 10,
@@ -411,6 +477,19 @@ const styles = StyleSheet.create({
         width: 40,
         zIndex: 1, // Add this line
     },
+    soldContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    soldMessage: {
+        fontSize: 24,
+        color: 'white',
+        marginTop: 20,
+        textAlign: 'center',
+        fontFamily: 'open-sans-bold'
+    },
+
 });
 
 

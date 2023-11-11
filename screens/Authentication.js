@@ -30,7 +30,7 @@ import { analytics } from '../firebase/firebase';
 const { width, height } = Dimensions.get('window');
 const CELL_COUNT = 6;
 export default function Authentication({ route, navigation }) {
-    const adId = route.params?.adIdAuth
+    const adId = route.params?.adIdm
     const { signInWithEmailPassword, signUpWithEmailPassword } = AuthOpen();
     const [formattedValue, setFormattedValue] = useState('');
     const { login } = useUser();

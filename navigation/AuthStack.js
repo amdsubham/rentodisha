@@ -31,7 +31,7 @@ const AuthStack = () => {
         return (
             <Stack.Navigator initialRouteName='Onboarding'>
                 <Stack.Screen name="Onboarding" options={{ headerShown: false }} component={OnboardingScreen} />
-                <Stack.Screen name="Authentication" options={{ headerShown: false }} component={Authentication} />
+                <Stack.Screen name="HomeTabNavigator" options={{ headerShown: false }} component={Authentication} />
                 <Stack.Screen name="AdDetailsWithoutAuthentication" component={AdDetailsWithoutAuthentication} />
                 <Stack.Screen name="HomeWithoutAuthentication" component={HomeWithoutAuthentication} />
             </Stack.Navigator>
@@ -45,9 +45,9 @@ const AuthStack = () => {
             screenOptions={{
                 headerShown: false
             }}
-            initialRouteName='Authentication'
+            initialRouteName='HomeTabNavigator'
         >
-            <Stack.Screen name="Authentication" component={Authentication} />
+            <Stack.Screen name="HomeTabNavigator" component={Authentication} />
             <Stack.Screen name="HomeWithoutAuthentication" component={HomeWithoutAuthentication} />
             <Stack.Screen name="AdDetailsWithoutAuthentication" component={AdDetailsWithoutAuthentication} />
         </Stack.Navigator>

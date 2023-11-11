@@ -11,7 +11,7 @@ export default function OnboardingScreen() {
     const navigation = useNavigation();
 
     const handleDone = () => {
-        navigation.navigate('Authentication');
+        navigation.navigate('HomeTabNavigator');
         setItem('onboarded', '1');
     }
 
