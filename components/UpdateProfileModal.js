@@ -31,7 +31,7 @@ import professionals from '../assets/images/professionals.png';
 import family from '../assets/images/family.png';
 const domains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com'];
 
-const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
+const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationModal }) => {
     const { setUserInfoToStore } = useUser()
     const { userToken, userInfo } = useUser();
     const [name, setName] = useState('');
@@ -178,6 +178,9 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists }) => {
             if (response.ok) {
                 const responseData = await response.json();
                 onDismiss();
+                if (!isUserExists) {
+                    setLocationModal(true)
+                }
                 updateProfileToFirebase({ name, pic: image, email, isEdit })
                 setUserInfoToStore({
                     name, image, email,

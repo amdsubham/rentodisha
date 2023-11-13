@@ -12,7 +12,7 @@ const DEFAULT_LOCATION = {
   label: 'Patia',
   value: 'Patia',
 }
-const CustomHeader = ({ navigation, onSettingPress, showBack = false }) => {
+const CustomHeader = ({ navigation, onSettingPress, showBack = false, locationModal = false, setLocationModal }) => {
   const { setUserInfoToStore, useToken } = useUser()
   const [selectedLocation, setSelectedLocation] = useState(DEFAULT_LOCATION);
   const [allLocations, setLocations] = useState([]);
@@ -57,6 +57,9 @@ const CustomHeader = ({ navigation, onSettingPress, showBack = false }) => {
     logEvent(analytics, "location changed", location);
     setSelectedLocation(location);
     setModalVisible(false);
+    if (locationModal) {
+      setLocationModal(false);
+    }
     setSearchQuery('');
     setSuggestedLocations([]);
     setUserInfoToStore(location)
@@ -99,7 +102,7 @@ const CustomHeader = ({ navigation, onSettingPress, showBack = false }) => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
+        visible={locationModal || modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalView}>

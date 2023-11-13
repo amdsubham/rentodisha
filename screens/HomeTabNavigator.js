@@ -4,7 +4,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
-import uuid4 from 'uuid4';
 import Home from './Home';
 import PostAdScreen from './PostAd';
 import UpdateProfileModal from '../components/UpdateProfileModal';
@@ -21,6 +20,9 @@ const HomeTabNavigator = ({ route }) => {
     const { logOut } = AuthOpen();
     const [isModalVisible, setModalVisible] = React.useState(false);
     const [isUpdateModalVisible, setUpdateModalVisible] = React.useState(false);
+    const [locationModal, setLocationModal] = React.useState(false);
+
+
     const [isUserExists, setIsUserExists] = useState(false);
     const [userProfileData, setUserProfileData] = React.useState({
         name: '',
@@ -127,6 +129,8 @@ const HomeTabNavigator = ({ route }) => {
             <CustomHeader
                 onBackPress={() => navigation.goBack()}
                 onSettingPress={toggleModal}
+                locationModal={locationModal}
+                setLocationModal={setLocationModal}
             />
         );
     };
@@ -203,6 +207,7 @@ const HomeTabNavigator = ({ route }) => {
                 onDismiss={handleDismissUpdateModal}
                 userProfileData={userProfileData}
                 isUserExists={isUserExists}
+                setLocationModal={setLocationModal}
                 onUpdateProfile={(updatedData) => {
                     // Handle updating the user profile here
                     setUserProfileData(updatedData);

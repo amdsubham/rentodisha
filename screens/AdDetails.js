@@ -139,7 +139,7 @@ const AdDetailsScreen = ({ route }) => {
     return (
         <SafeAreaView style={styles.flexContainer}>
             <View style={{ height: "90%", backgroundColor: '#f8f9fa', }}>
-                <LinearGradient colors={['#007DBC', '#005AAA']} style={styles.header}>
+                <LinearGradient colors={['#007DBC', '#005AAA']} >
                     <TouchableOpacity onPress={handleBackButton} style={styles.seeMoreButtonContainer}>
                         <Ionicons name="arrow-back" size={24} color="white" />
                     </TouchableOpacity>
