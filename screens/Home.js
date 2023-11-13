@@ -213,7 +213,7 @@ const AnimatedCard = ({ item, onPress }) => {
                 delayPressIn={100} // Add delay here
                 style={styles.touchable}
             >
-                <LinearGradient colors={['#005AAA', '#007DBC']} style={styles.gradient}>
+                <LinearGradient colors={['#005AAA', '#007DBC']}>
                     <Animated.Image source={{ uri: item.images[0] }} style={[styles.adImage, animatedImageStyles]} />
                     <View style={styles.adDetails}>
                         <Text

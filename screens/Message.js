@@ -17,6 +17,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { WebView } from 'react-native-webview';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import axios from "axios"; // Import Axios for making API requests
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import tw from "tailwind-rn";
@@ -39,6 +40,8 @@ import ChatHeader from "../components/ChatHeader";
 import MessageSuggestion from "../components/MessageSuggestion";
 import { logEvent } from "firebase/analytics";
 import CoinModal from "../components/CoinModal";
+import FAB from 'react-native-animated-fab';
+
 const MessageScreen = ({ route, navigation }) => {
   const flatListRef = useRef();
   const [userInfo, setUserInfo] = useState({ coins: 2 });
@@ -56,6 +59,8 @@ const MessageScreen = ({ route, navigation }) => {
     "https://subham-routray.mojo.page/odicult-subscription"
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [rentPosts, setRentPosts] = useState([]);
+  const [isRentModalVisible, setRentModalVisible] = useState(false);
   const isWeb = Platform.OS === 'web';
 
   useEffect(() => {
@@ -71,6 +76,98 @@ const MessageScreen = ({ route, navigation }) => {
     }
   }, [userInfo?.coins]);
 
+  const handleAdPress = (ad) => {
+    logEvent(analytics, "Post OnClick", (ad));
+    navigation.navigate('SingleScreenAd', { adIds: ad?._id });
+  };
+  const AnimatedCard = ({ item, onPress }) => {
+    const scale = useSharedValue(1);
+    const lastPress = useRef(Date.now());
+
+    const animatedStyles = useAnimatedStyle(() => {
+      return {
+        transform: [{ scale: scale.value }],
+      };
+    });
+
+    const animatedImageStyles = useAnimatedStyle(() => {
+      return {
+        transform: [
+          { perspective: 1000 },
+          { rotateY: `${scale.value * 0}deg` },
+        ],
+      };
+    });
+
+    const handlePress = () => {
+      const now = Date.now();
+      if (now - lastPress.current > 300) { // Prevent multiple rapid presses
+        lastPress.current = now;
+        onPress(item);
+      }
+    };
+
+    const handlePressIn = () => {
+      scale.value = withSpring(1.05);
+    };
+
+    const handlePressOut = () => {
+      scale.value = withSpring(1);
+    };
+
+    return (
+      <Animated.View style={[styles.card, animatedStyles]}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handlePress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          delayPressIn={100} // Add delay here
+          style={styles.touchable}
+        >
+          <LinearGradient colors={['#005AAA', '#007DBC']} style={styles.gradient}>
+            <Animated.Image source={{ uri: item.images[0] }} style={[styles.adImage, animatedImageStyles]} />
+            <View style={styles.adDetails}>
+              <Text
+                style={styles.adTitle}
+                numberOfLines={2}
+                ellipsizeMode='tail'
+              >
+                {item.adTitle}
+              </Text>
+              <View style={styles.adInfo}>
+                <Text style={styles.adPrice}>Price: ₹{item.price}</Text>
+                <Text style={styles.adBedrooms}>{item.bedrooms} {item.location}</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  const renderAdCard = ({ item }) => (
+    <AnimatedCard item={item} onPress={handleAdPress} />
+  );
+
+  const fetchAds = async () => {
+    try {
+      // setIsLoading(true)
+      const response = await fetch(`${API_BASE_URL}/rentpost/getAllPosts`);
+      if (response.ok) {
+        const data = await response.json();
+        setRentPosts(data);
+        // setIsLoading(false)
+      } else {
+        console.error('Failed to fetch ad posts');
+      }
+    } catch (error) {
+      console.error('Error fetching ad posts:', error);
+    } finally {
+      // setRefreshing(false);
+      // setIsLoading(false)
+    }
+  };
   useEffect(() => {
     if (messages && messages.length > 0) {
       const firstMessage = messages[messages.length - 1]; // Since it's an inverted list, the first message will be the last element in the array.
@@ -78,6 +175,24 @@ const MessageScreen = ({ route, navigation }) => {
     }
   }, [messages]);
 
+  const RentModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isRentModalVisible}
+      onRequestClose={() => setRentModalVisible(false)}
+    >
+      <View style={styles.rentModalContainer}>
+        <FlatList
+          data={rentPosts}
+          renderItem={renderAdCard}
+          keyExtractor={(item) => item.id}
+          horizontal={true}
+          style={styles.rentFlatList}
+        />
+      </View>
+    </Modal>
+  );
 
   const fetchUserInitialDetails = async () => {
     try {
@@ -246,8 +361,24 @@ const MessageScreen = ({ route, navigation }) => {
   return (
     <>
       <ChatHeader coins={userInfo?.coins} userDetails={userDetails} navigation={navigation} />
+      <View style={styles.headerContainer}>
+        <FAB
+          icon={'home'}
+          onPress={() => {
+            fetchAds();
+            setRentModalVisible(!isRentModalVisible);
+          }}
+          renderSize={60}
+          borderRadius={30}
+          style={styles.fabStyle}
+        />
+      </View>
+
       <LinearGradient colors={['#dddddd', '#005AAA']} style={styles.container}>
-        <Pressable onPress={Keyboard.dismiss}>
+        {<RentModal />}
+
+        <Pressable onPress={Keyboard.dismiss} style={styles.flatListContainer}>
+
           <FlatList
             ref={flatListRef}
             data={messages}
@@ -262,6 +393,7 @@ const MessageScreen = ({ route, navigation }) => {
               )
             }
             onContentSizeChange={scrollFlatListToEnd}
+          //horizontal={true}
           // refreshControl={
           //   <RefreshControl
           //     refreshing={refreshing}
@@ -270,6 +402,8 @@ const MessageScreen = ({ route, navigation }) => {
           //   />
           // }
           />
+
+
         </Pressable>
       </LinearGradient>
       <LinearGradient colors={['#005AAA', '#dddddd',]} style={styles.inputSection}>
@@ -425,11 +559,104 @@ const styles = StyleSheet.create({
     width: '100%', // Full width of the screen
     padding: 10, // Optional padding
   },
-
   flatList: {
     // Removed paddingLeft and added flex: 1
     flex: 1, // Takes all available space except for the input section
   },
+  headerContainer: {
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    alignItems: 'center',
+    top: 30,
+  },
+  fabStyle: {
+    position: 'absolute',
+    right: '100%', // Adjust as needed
+    top: '70%', // Adjust based on the height of the ChatHeader
+  },
+  rentModalContainer: {
+    height: 100,
+    flex: 1,
+    paddingTop: 50, // Adjust as needed
+    paddingHorizontal: 10, // Adjust as needed
+  },
+  adList: {
+    padding: 8,
+  },
+  touchable: {
+    flex: 1,
+  },
+  adLocation: {
+    fontSize: 14, // Reduced font size for location
+    color: 'white', // Lighter text color for location
+    marginBottom: 8, // Added margin-bottom for spacing
+  },
+  adInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#005AAA', // Adjust the color and opacity to match your gradient
+  },
+  rentFlatList: {
+    flexGrow: 0, // Prevents the FlatList from filling all available space
+    // height: 200, // Adjust the height as needed to fit the cards
+    backgroundColor: '#007DBC', // Background color for the FlatList area
+    paddingHorizontal: 10, // Horizontal padding for some space around the cards
+  },
+  card: {
+    width: 180, // Set a fixed width for each card
+    marginHorizontal: 5, // Reduced margin for less gap between cards
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    elevation: 6,
+    shadowColor: 'rgba(0,0,0,0.15)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    borderColor: '#f0f0f0',
+    borderWidth: 1,
+    fontFamily: 'open-sans-regular',
+  },
+
+  adImage: {
+    width: '100%',
+    height: 140, // Adjust the height as needed
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+  },
+
+  adDetails: {
+    flex: 1,
+    padding: 12,
+  },
+
+  adTitle: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: 'white',
+    fontFamily: 'open-sans-bold',
+  },
+
+  adPrice: {
+    fontSize: 16,
+    color: '#deac47',
+    fontFamily: 'open-sans-bold',
+  },
+
+  adBedrooms: {
+    fontSize: 12,
+    color: '#999',
+  },
+  flatListContainer: {
+    flex: 1,
+    paddingTop: 60, // Adjust the padding to ensure the list starts below the FAB
+  },
+
 });
 
 export default MessageScreen;
