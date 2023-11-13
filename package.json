@@ -33,6 +33,7 @@
     "react-animated-numbers": "^0.16.0",
     "react-dom": "18.2.0",
     "react-native": "0.72.6",
+    "react-native-animated-fab": "^0.2.1",
     "react-native-animated-numbers": "^0.4.1",
     "react-native-autocomplete-input": "^5.4.0",
     "react-native-aws3": "^0.0.9",
