@@ -21,10 +21,10 @@ const HomeWithoutAuthentication = () => {
     const [bannersLoading, setBannersLoading] = useState(true);
     const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'male', 'female'
     const [filteredAds, setFilteredAds] = useState([]);
+
     useEffect(() => {
         fetchAds();
         fetchBanners()
-
     }, []);
 
     const fetchAds = async () => {

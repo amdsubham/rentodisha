@@ -11,7 +11,7 @@ import BannerCarousel from '../components/BannerCarousel';
 import { logEvent } from 'firebase/analytics';
 import SkeletonLoader from "expo-skeleton-loader";
 const { height, width } = Dimensions.get('window');
-
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const Home = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [ads, setAds] = useState([]);
@@ -46,6 +46,9 @@ const Home = () => {
         }
     };
 
+    const navigateToPostAdScreen = () => {
+        navigation.navigate('PostAd');
+    };
     const handleGenderFilterChange = (newFilter) => {
         setGenderFilter(newFilter);
     };
@@ -164,6 +167,12 @@ const Home = () => {
                     }
                 />
             </View>
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={navigateToPostAdScreen}
+            >
+                <MaterialIcons name="post-add" size={40} color="white" />
+            </TouchableOpacity>
         </>
     );
 };
@@ -332,6 +341,23 @@ const styles = StyleSheet.create({
     filterTextActive: {
         color: 'white',
         textAlign: 'center',
+    },
+    fab: {
+        position: 'absolute',
+        width: 48, // Slightly smaller
+        height: 48, // Slightly smaller
+        alignItems: 'center',
+        justifyContent: 'center',
+        right: 16, // Less offset
+        bottom: 16, // Less offset
+        backgroundColor: '#007DBC',
+        borderRadius: 24, // Adjust for smaller size
+        elevation: 6, // Reduced elevation for subtlety
+        shadowColor: '#000', // Added shadow for depth
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+        opacity: 0.9 // Slightly transparent
     },
 });
 

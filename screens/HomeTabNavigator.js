@@ -5,12 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useUser } from '../context/UserContext';
 import Home from './Home';
-import PostAdScreen from './PostAd';
 import UpdateProfileModal from '../components/UpdateProfileModal';
 import API_BASE_URL from '../services/config';
 import { AuthOpen } from '../hooks/useAuth';
 import Chat from './Chat';
 import CustomHeader from '../components/CustomHeader';
+import StoreStackNavigator from '../navigation/StoreStackNavigator';
 const Tab = createBottomTabNavigator();
 
 const HomeTabNavigator = ({ route }) => {
@@ -174,15 +174,14 @@ const HomeTabNavigator = ({ route }) => {
                     }}
                 />
                 <Tab.Screen
-                    name="PostAdScreen"
-                    component={PostAdScreen}
+                    name="Store"
+                    component={StoreStackNavigator}
                     options={{
-                        title: '',
                         tabBarIcon: ({ color, focused }) => (
                             <MaterialCommunityIcons
-                                name={focused ? 'plus-circle' : 'plus-circle'}
-                                size={55}
-                                color={focused ? '#007DBC' : "rgb(128, 128, 128)"}
+                                name={focused ? 'shopping' : 'shopping'}
+                                size={24}
+                                color={color}
                             />
                         ),
                     }}
