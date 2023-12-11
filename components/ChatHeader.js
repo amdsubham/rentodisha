@@ -1,42 +1,59 @@
+import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; // Make sure to install this library
-import AnimatedNumbers from 'react-native-animated-numbers';
+import { Ionicons } from '@expo/vector-icons';
 import WebAnimatedNumbers from 'react-animated-numbers';
+
 const ChatHeader = ({ userDetails, navigation, coins }) => {
+    const [AnimatedNumberComponent, setAnimatedNumberComponent] = useState(null);
     const handleBackPress = () => {
         navigation.goBack();
     };
-    const AnimatedNumberComponent = Platform.select({
-        web: WebAnimatedNumbers,
-        default: AnimatedNumbers,
-    });
+    useEffect(() => {
+        if (Platform.OS === 'web') {
+            setAnimatedNumberComponent(WebAnimatedNumbers);
+        } else {
+            // Dynamic import for non-web platforms
+            import('@birdwingo/react-native-spinning-numbers').then((module) => {
+                setAnimatedNumberComponent(module.default);
+            });
+        }
+    }, []);
+
+    // Render nothing until the component is loaded
+    if (!AnimatedNumberComponent) {
+        return null;
+    }
+
     return (
         <SafeAreaView>
-            <View style={styles.chatHeaderContainer} >
-
+            <View style={styles.chatHeaderContainer}>
                 <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 {userDetails?.image && (<Image source={{ uri: userDetails.image }} style={styles.chatHeaderImage} />)}
                 <Text style={styles.chatHeaderText}>{userDetails.name}</Text>
                 <View style={styles.coinsContainer}>
-                    <Text style={styles.coinsTitle}>Message Left</Text>
-                    <AnimatedNumberComponent
-                        animateToNumber={coins}
-                        fontStyle={styles.coinsValue}
-                        includeComma
-                        frameStyle={{ flexDirection: 'row', alignItems: 'flex-end' }}
-                    />
+                    <Text style={styles.coinsTitle}>Messages Left</Text>
+                    {Platform.OS === 'web' ?
+                        <AnimatedNumberComponent
+                            style={styles.coinsValue}
+                        >
+                            {coins}
+                        </AnimatedNumberComponent> :
+                        <Text
+                            style={styles.coinsValue}
+                        >
+                            {coins}
+                        </Text>
+                    }
                 </View>
             </View>
         </SafeAreaView>
     );
 };
-
 const styles = StyleSheet.create({
     chatHeaderContainer: {
-
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,

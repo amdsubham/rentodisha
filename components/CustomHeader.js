@@ -6,8 +6,11 @@ import axios from 'axios';
 import API_BASE_URL from '../services/config';
 import { useUser } from '../context/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { logEvent } from 'firebase/analytics';
+import { logEvent } from 'expo-firebase-analytics';
 import { analytics } from '../firebase/firebase';
+import { OneSignal } from 'react-native-onesignal';
+import { customEvent } from 'vexo-analytics';
+
 const DEFAULT_LOCATION = {
   label: 'Patia',
   value: 'Patia',
@@ -54,7 +57,9 @@ const CustomHeader = ({ navigation, onSettingPress, showBack = false, locationMo
   };
 
   const selectLocation = (location) => {
+    OneSignal.User.addTag("location", location.value);
     logEvent(analytics, "location changed", location);
+    customEvent("location changed", location.value)
     setSelectedLocation(location);
     setModalVisible(false);
     if (locationModal) {

@@ -1,42 +1,46 @@
-import { collection, onSnapshot, query, where } from "@firebase/firestore";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-} from "react-native";
+import { ActivityIndicator, View, Text, FlatList, StyleSheet, RefreshControl } from "react-native";
 import tw from "tailwind-rn";
-import { AuthOpen } from "../hooks/useAuth";
-import ChatRow from "./ChatRow";
+import { collection, onSnapshot, query, where } from "@firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useUser } from "../context/UserContext";
+import ChatRow from "./ChatRow";
 
 const ChatList = () => {
   const [matches, setMatches] = useState([]);
-  const { userInfo } = useUser();
   const [loading, setLoading] = useState(true);
-  useEffect(
-    () =>
-      onSnapshot(
-        query(
-          collection(db, "matches"),
-          where("usersMatched", "array-contains", userInfo.firebaseId)
-        ),
-        (snapshot) =>
-          setMatches(
-            snapshot.docs.map(
-              (doc) => ({
-                id: doc.id,
-                ...doc.data(),
-              }),
-              setLoading(false)
-            )
-          )
+  const { userInfo } = useUser();
+
+  const fetchMatches = () => {
+    setLoading(true);
+    onSnapshot(
+      query(
+        collection(db, "matches"),
+        where("usersMatched", "array-contains", userInfo.firebaseId)
       ),
-    [userInfo]
-  );
+      (snapshot) => {
+        setMatches(
+          snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+        );
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching matches:", error);
+        setLoading(false);
+      }
+    );
+  };
+
+  useEffect(() => {
+    fetchMatches();
+  }, [userInfo]);
+
+  const onRefresh = React.useCallback(() => {
+    fetchMatches();
+  }, [fetchMatches]);
 
   return loading ? (
     <View style={[styles.container, styles.horizontal]}>
@@ -48,10 +52,16 @@ const ChatList = () => {
       data={matches}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ChatRow matchDetails={item} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={onRefresh}
+        />
+      }
     />
   ) : (
     <View style={tw("p-5")}>
-      <Text style={tw("text-center text-lg")}>No Message at the moment 😢</Text>
+      <Text style={tw("text-center text-lg")}>No Message at this moment !!</Text>
     </View>
   );
 };

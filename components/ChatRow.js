@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-
 import { useNavigation } from '@react-navigation/native';
 import tw from "tailwind-rn";
 import { collection, onSnapshot, orderBy, query } from "@firebase/firestore";

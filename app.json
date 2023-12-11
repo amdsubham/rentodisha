@@ -1,30 +1,60 @@
 {
   "expo": {
-    "name": "Rent Odisha",
-    "slug": "Rent Odisha",
-    "version": "1.0.0",
+    "name": "RentNearBy",
+    "slug": "RentOdisha",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#000000"
-    },
+    "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.amdsubham.rentOdisha"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
-      }
+      },
+      "package": "com.amdsubham.rentOdisha",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "oneSignalAppId": "875e23e4-d71b-447a-a29b-79b7c423a9fe",
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "OneSignalNotificationServiceExtension",
+                  "bundleIdentifier": "com.amdsubham.rentOdisha.OneSignalNotificationServiceExtension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.amdsubham.rentOdisha.onesignal"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "c967a693-6a50-4ad8-b497-c7af3a614900"
+      }
+    },
+    "plugins": [
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "production"
+        }
+      ]
+    ]
   }
 }

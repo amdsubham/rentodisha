@@ -18,7 +18,7 @@ export default function OnboardingScreen() {
     const doneButton = ({ ...props }) => {
         return (
             <TouchableOpacity style={styles.doneButton} {...props}>
-                <Text>Done</Text>
+                <Text style={{ color: 'white' }}>Done</Text>
             </TouchableOpacity>
         )
 
@@ -80,8 +80,5 @@ const styles = StyleSheet.create({
     },
     doneButton: {
         padding: 20,
-        // backgroundColor: 'white',
-        // borderTopLeftRadius: '100%',
-        // borderBottomLeftRadius: '100%'
     }
 })

@@ -8,6 +8,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import { getItem } from '../utils/asyncStorage';
 import AdDetailsWithoutAuthentication from '../screens/AdDetailsWithoutAuthentication';
 import HomeWithoutAuthentication from '../screens/HomeWithoutAuthentication';
+import Loading from '../components/Loading';
 
 const Stack = createStackNavigator();
 
@@ -34,6 +35,7 @@ const AuthStack = () => {
                 <Stack.Screen name="HomeTabNavigator" options={{ headerShown: false }} component={Authentication} />
                 <Stack.Screen name="AdDetailsWithoutAuthentication" component={AdDetailsWithoutAuthentication} />
                 <Stack.Screen name="HomeWithoutAuthentication" component={HomeWithoutAuthentication} />
+                <Stack.Screen name="LoadingScreen" component={Loading} />
             </Stack.Navigator>
         );
     }
@@ -50,6 +52,7 @@ const AuthStack = () => {
             <Stack.Screen name="HomeTabNavigator" component={Authentication} />
             <Stack.Screen name="HomeWithoutAuthentication" component={HomeWithoutAuthentication} />
             <Stack.Screen name="AdDetailsWithoutAuthentication" component={AdDetailsWithoutAuthentication} />
+            <Stack.Screen name="LoadingScreen" component={Loading} />
         </Stack.Navigator>
     );
 };

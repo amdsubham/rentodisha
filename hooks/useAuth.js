@@ -23,12 +23,13 @@ const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
         try {
+          setUser(authUser)
         } catch (error) {
           console.error('Error fetching user details:', error);
         }
         setLoadingLogin(false);
       } else {
-        // setUser(null);
+        setUser(null);
         setLoadingLogin(false);
       }
     });

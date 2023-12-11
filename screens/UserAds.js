@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, RefreshControl, Linking } from 'react-native';
 import Modal from 'react-native-modal';
 import AdCard from '../components/AdCard'; // Import the AdCard component
 import API_BASE_URL from '../services/config'; // Your API base URL
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome icons
 import { useNavigation } from '@react-navigation/native'; // Import the useNavigation hook
 import { useUser } from '../context/UserContext';
+import { MaterialIcons, Entypo, AntDesign } from '@expo/vector-icons';
 
 const UserAds = () => {
     const { userDetails } = useUser();
@@ -16,6 +17,7 @@ const UserAds = () => {
     const [isDeleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false); // To show delete confirmation modal
     const navigation = useNavigation(); // Get the navigation object
     const [refreshing, setRefreshing] = useState(false);
+    const [isClaimModalVisible, setClaimModalVisible] = useState(false);
 
     useEffect(() => {
         // Fetch user's posted ads from the backend
@@ -40,12 +42,54 @@ const UserAds = () => {
         navigation.navigate('PostAd', { ad });
     };
 
+    const renderClaimModal = () => (
+        <Modal isVisible={isClaimModalVisible}>
+            <View style={styles.claimModalContainer}>
+                <TouchableOpacity
+                    onPress={() => setClaimModalVisible(false)}
+                    style={styles.modalCloseButton}
+                >
+                    <AntDesign name="close" size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.claimModalText}>
+                    To Claim Rewards Please contact through any of the options
+                </Text>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={handleEmail}
+                >
+                    <MaterialIcons name="email" size={24} color="white" />
+                    <Text style={styles.iconButtonText}>Email</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    // onPress={() => {/* Handle phone action */ }}
+                    onPress={handlePhoneCall}
+                >
+                    <Entypo name="phone" size={24} color="white" />
+                    <Text style={styles.iconButtonText}>Call</Text>
+                </TouchableOpacity>
+            </View>
+        </Modal>
+    );
+
     const renderEmptyListComponent = () => (
         <View style={styles.emptyListContainer}>
             <Text style={styles.emptyListText}>You have no ads posted yet.</Text>
         </View>
     );
 
+    const handleEmail = () => {
+        const email = "primecaves@gmail.com";
+        Linking.openURL(`mailto:${email}`)
+            .catch((err) => console.error('An error occurred', err));
+    };
+
+    const handlePhoneCall = () => {
+        const phoneNumber = "7008105210";
+        Linking.openURL(`tel:${phoneNumber}`)
+            .catch((err) => console.error('An error occurred', err));
+    };
 
     const handleDelete = async (adId) => {
         setIsLoading(true);
@@ -74,6 +118,8 @@ const UserAds = () => {
 
     const handleClaim = (ad) => {
         // Implement your claim logic here
+        setSelectedAd(ad);
+        setClaimModalVisible(true);
     };
 
     const toggleModal = (ad) => {
@@ -129,6 +175,7 @@ const UserAds = () => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
             />
+            {isClaimModalVisible && renderClaimModal()}
             <Modal isVisible={isModalVisible}>
                 <View style={styles.modalContainer}>
                     <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
@@ -244,6 +291,38 @@ const styles = StyleSheet.create({
     },
     closeButtonText: {
         color: 'white',
+    },
+    claimModalContainer: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    claimModalText: {
+        fontSize: 16,
+        top: 10,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    iconButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#007DBC',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 5,
+        marginBottom: 10,
+    },
+    iconButtonText: {
+        marginLeft: 10,
+        color: 'white',
+    },
+    modalCloseButton: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        padding: 8,
+        zIndex: 1,
     },
 });
 

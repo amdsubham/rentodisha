@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import AnimatedNumbers from 'react-native-animated-numbers';
 import WebAnimatedNumbers from 'react-animated-numbers';
 import { Ionicons } from '@expo/vector-icons';
 
 const CoinModal = ({ isVisible, onTakePremium, coins, onClose }) => {
-    const AnimatedNumberComponent = Platform.select({
-        web: WebAnimatedNumbers,
-        default: AnimatedNumbers,
-    });
+    const [AnimatedNumberComponent, setAnimatedNumberComponent] = useState(null);
+
+    useEffect(() => {
+        if (Platform.OS === 'web') {
+            setAnimatedNumberComponent(WebAnimatedNumbers);
+        } else {
+            // Dynamic import for non-web platforms
+            import('@birdwingo/react-native-spinning-numbers').then((module) => {
+                setAnimatedNumberComponent(module.default);
+            });
+        }
+    }, []);
+
+    // Render nothing until the component is loaded
+    if (!AnimatedNumberComponent) {
+        return null;
+    }
+
     return (
         <Modal
             animationType="slide"
@@ -19,19 +32,19 @@ const CoinModal = ({ isVisible, onTakePremium, coins, onClose }) => {
         >
             <View style={styles.centeredView}>
                 <LinearGradient
-                    colors={['#005AAA', '#dddddd',]}
+                    colors={['#005AAA', '#dddddd']}
                     style={styles.gradient}
                 >
                     <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                         <Ionicons name="close-circle" size={30} color="white" />
                     </TouchableOpacity>
                     <View style={styles.modalView}>
-
                         <Text style={styles.modalText}>You have only one coin left!</Text>
                         <AnimatedNumberComponent
-                            animateToNumber={coins}
-                            fontStyle={styles.animatedNumbers}
-                        />
+                            style={styles.animatedNumbers}
+                        >
+                            {coins}
+                        </AnimatedNumberComponent>
                         <TouchableOpacity style={styles.premiumButton} onPress={onTakePremium}>
                             <Text style={styles.premiumButtonText}>Buy Premium</Text>
                         </TouchableOpacity>
@@ -41,7 +54,6 @@ const CoinModal = ({ isVisible, onTakePremium, coins, onClose }) => {
         </Modal>
     );
 };
-
 const styles = StyleSheet.create({
     centeredView: {
         flex: 1,

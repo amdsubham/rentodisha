@@ -12,22 +12,20 @@ import {
     Platform
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Image } from 'react-native';
-
 import PhoneNumberInput from 'react-native-phone-number-input';
 import { useUser } from '../context/UserContext';
 import API_BASE_URL from '../services/config';
 import { AuthOpen } from '../hooks/useAuth';
 import Lottie from 'lottie-react-native';
-import LottieView from 'react-native-web-lottie';
-
+// import LottieView from 'react-native-web-lottie';
+import { OneSignal } from 'react-native-onesignal';
 import { CodeField, Cursor, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { LinearGradient } from 'expo-linear-gradient';
 import TextAnimator from '../components/TextAnimator';
-import { logEvent } from 'firebase/analytics';
+import { logEvent } from 'expo-firebase-analytics';
 import { analytics } from '../firebase/firebase';
-
-const { width, height } = Dimensions.get('window');
+import { customEvent } from 'vexo-analytics';
+const { width } = Dimensions.get('window');
 const CELL_COUNT = 6;
 export default function Authentication({ route, navigation }) {
     const adId = route.params?.adIdm
@@ -71,6 +69,8 @@ export default function Authentication({ route, navigation }) {
 
     const renderMedia = () => {
         if (Platform.OS === 'web') {
+            let LottieView;
+            LottieView = require('react-native-web-lottie').default;
             return (
                 <LottieView
                     source={require('../assets/animations/dreamHouse.json')}
@@ -97,6 +97,7 @@ export default function Authentication({ route, navigation }) {
             )
                 ? 121212
                 : Math.floor(100000 + Math.random() * 900000);
+
         setAssignedOtp(otp);
         return otp;
     };
@@ -145,6 +146,7 @@ export default function Authentication({ route, navigation }) {
             setIsLoading(true);
             if (otp === assignedOtp.toString()) {
                 login(phoneNumber);
+                OneSignal.login(phoneNumber)
                 if (isUserExists) {
                     signInWithEmailPassword(`${phoneNumber}@gmail.com`, phoneNumber);
                 } else {
@@ -182,12 +184,13 @@ export default function Authentication({ route, navigation }) {
                     >
                         {(!isTextInputFocused) && (<View style={styles.lottie}>
                             {renderMedia()}
-                            <TextAnimator
-                                content={animatedTexts[currentTextIndex]}
-                                textStyle={styles.textStyle}
-                                duration={1500}
-                                onFinish={handleAnimationComplete}
-                            />
+                            {Platform.OS === 'web' && (
+                                < TextAnimator
+                                    content={animatedTexts[currentTextIndex]}
+                                    textStyle={styles.textStyle}
+                                    duration={1500}
+                                    onFinish={handleAnimationComplete}
+                                />)}
                         </View>)}
                         <KeyboardAvoidingView
                             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -208,6 +211,7 @@ export default function Authentication({ route, navigation }) {
                                     value={phoneNumber}
                                     onChangeText={(text) => {
                                         logEvent(analytics, "phone number changed", text);
+                                        customEvent("phone number changed", text)
                                         setPhoneNumber(text);
                                     }}
                                     onChangeFormattedText={(text) => {

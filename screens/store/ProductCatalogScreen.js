@@ -16,7 +16,6 @@ import api from '../../api';
 import CartCountCard from '../../components/CartCountCard';
 import { useUser } from '../../context/UserContext';
 
-
 const ProductCatalogScreen = (props) => {
     const navigation = useNavigation();
     const { userId, logout } = useUser();

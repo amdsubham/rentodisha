@@ -7,7 +7,6 @@ import { useUser } from '../../context/UserContext';
 
 const CheckoutProcess = ({ route }) => {
     const { userId, userInfo } = useUser();
-    console.log("userInfouserInfo", userInfo)
     const { cartItems, totalPrice } = route.params;
     const [name, setName] = useState(userInfo?.name || '');
     const [email, setEmail] = useState(userInfo?.email || '');

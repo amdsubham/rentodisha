@@ -9,6 +9,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import API_BASE_URL, { DOMAIN_URL } from '../services/config';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Import for larger icon
+import DownloadAppModal from '../components/DownloadAppModal';
 
 const amenitiesMapping = [
     { key: 'isFurnished', label: 'Furnished', icon: 'bed-outline' },
@@ -26,7 +27,9 @@ const AdDetailsScreen = ({ route }) => {
     const [firebaseId, setFirebaseId] = useState(ad?.firebaseId);
     const [flatmatesData, setFlatmatesData] = useState(ad?.flatmates);
     const [userDetails, setUserDetails] = useState(null);
+    // const [userAllDetails, setUserAllDetails] = useState(null);
     const [showDirectMessageButton, setShowDirectMessageButton] = useState(false);
+    const [showDownloadAppModal, setShowDownloadAppModal] = useState(false);
     const isPostedByCurrentUser = firebaseId === userInfo?.firebaseId;
     const [isAdAvailable, setIsAdAvailable] = useState(true);
     useEffect(() => {
@@ -86,6 +89,21 @@ const AdDetailsScreen = ({ route }) => {
         }
     };
 
+    // const fetchUserInitialDetails = async (firebaseId) => {
+    //     try {
+    //         const response = await fetch(`${API_BASE_URL}/user/getUserByFirebaseId/${firebaseId}`);
+    //         if (response.ok) {
+    //             const userInfo = await response.json();
+    //             setUserAllDetails(userInfo)
+    //             setShowDirectMessageButton(true);
+    //         } else {
+    //             console.error('Failed to fetch user details');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching user details:', error);
+    //     }
+    // };
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
@@ -94,6 +112,7 @@ const AdDetailsScreen = ({ route }) => {
                 if (userDoc.exists()) {
                     setUserDetails(userDoc.data());
                     setShowDirectMessageButton(true);
+                    // fetchUserInitialDetails(firebaseId)
                 }
             } catch (error) {
                 console.error('Error fetching user details:', error);
@@ -107,9 +126,16 @@ const AdDetailsScreen = ({ route }) => {
 
 
     const handleDirectMessage = () => {
-        navigation.navigate('Message', {
-            userDetails
-        });
+        if (Platform.OS === "web") {
+            setShowDownloadAppModal(true)
+        }
+        else {
+            navigation.navigate('Message', {
+                userDetails,
+                //userAllDetails,
+                fromAdDetails: true
+            });
+        }
     };
 
     const handleBackButton = () => {
@@ -208,6 +234,10 @@ const AdDetailsScreen = ({ route }) => {
                 </View>
 
             )}
+            <DownloadAppModal
+                visible={showDownloadAppModal}
+                onClose={() => setShowDownloadAppModal(false)}
+            />
 
         </SafeAreaView>
     );

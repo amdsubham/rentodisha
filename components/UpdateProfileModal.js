@@ -9,7 +9,6 @@ import {
     Platform,
     ActivityIndicator,
     Image,
-    ScrollView
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,8 +16,6 @@ import { RNS3 } from 'react-native-aws3';
 import { useUser } from '../context/UserContext';
 import API_BASE_URL from '../services/config';
 import Toast from 'react-native-toast-message';
-import Autocomplete from 'react-native-autocomplete-input';
-import { AuthOpen } from '../hooks/useAuth'
 import { serverTimestamp, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { getAuth, updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db } from '../firebase/firebase';
@@ -29,6 +26,7 @@ import femaleIcon from '../assets/images/female.png';
 import student from '../assets/images/student.png';
 import professionals from '../assets/images/professionals.png';
 import family from '../assets/images/family.png';
+import { OneSignal } from 'react-native-onesignal';
 const domains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com'];
 
 const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationModal }) => {
@@ -174,7 +172,6 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationMod
                     location: userLocation,
                 }),
             });
-
             if (response.ok) {
                 const responseData = await response.json();
                 onDismiss();
@@ -182,6 +179,7 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationMod
                     setLocationModal(true)
                 }
                 updateProfileToFirebase({ name, pic: image, email, isEdit })
+                OneSignal.User.addEmail(email)
                 setUserInfoToStore({
                     name, image, email,
                     gender,
@@ -197,7 +195,9 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationMod
                     text2: 'Profile saved successfully',
                 });
 
-            } else {
+            }
+
+            else {
                 console.error('Save failed');
             }
         } catch (error) {
@@ -210,7 +210,7 @@ const UpdateProfileModal = ({ isVisible, onDismiss, isUserExists, setLocationMod
         } finally {
             setLoading(false);
         }
-    }, [userToken, name, email, gender, image, tenantType]);
+    }, [userToken, name, email, gender, image, tenantType, userId]);
 
     useEffect(() => {
         requestLocationPermission();

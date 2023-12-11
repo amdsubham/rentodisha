@@ -1,34 +1,35 @@
 {
   "files": {
-    "main.js": "/static/js/main.b2940e76.js",
-    "static/js/959.a64e2a6a.js": "/static/js/959.a64e2a6a.js",
+    "main.js": "/static/js/main.89a7dc03.js",
+    "static/js/813.312d9308.js": "/static/js/813.312d9308.js",
     "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
+    "static/media/convInt.png": "/static/media/convInt.39966914b56c8af80fdf.png",
     "static/media/Ionicons.ttf": "/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
     "static/media/MaterialIcons.ttf": "/static/media/MaterialIcons.120b4c7bbd155bd0a04d.ttf",
     "static/media/FontAwesome.ttf": "/static/media/FontAwesome.1e59d2330b4c6deb84b3.ttf",
     "static/media/OpenSans-Bold.ttf": "/static/media/OpenSans-Bold.11d42620ac71ab231c13.ttf",
     "static/media/OpenSans-Light.ttf": "/static/media/OpenSans-Light.8f628bef23d5842e448b.ttf",
     "static/media/OpenSans-Regular.ttf": "/static/media/OpenSans-Regular.ac568e1f1b394b9786bd.ttf",
+    "static/media/AntDesign.ttf": "/static/media/AntDesign.163adab9dbd7cb1ed12a.ttf",
+    "static/media/Entypo.ttf": "/static/media/Entypo.fc6169344c041cffcdae.ttf",
     "static/media/professionals.png": "/static/media/professionals.c0dc69eaf841e051f712.png",
-    "static/media/Foundation.ttf": "/static/media/Foundation.c0cbb004854f9c746f89.ttf",
     "static/media/family.png": "/static/media/family.d874266fee876b89d516.png",
     "static/media/student.png": "/static/media/student.dd9dc02bbfe443eba3d5.png",
     "static/media/female.png": "/static/media/female.c0c90dd7b91bad08517d.png",
     "static/media/male.png": "/static/media/male.c18ffcce2c78f1e72cf6.png",
     "favicon.ico": "/favicon.ico",
-    "static/media/argon.ttf": "/static/media/argon.93f129b55ef2da3729e9.ttf",
-    "index.html": "/index.html",
     "static/media/close.android.png": "/static/media/close.android.0d17e0283034f44be356.png",
+    "index.html": "/index.html",
     "static/media/close.ios.png": "/static/media/close.ios.81d829c35aa7afa6d25d.png",
     "favicon-32.png": "/favicon-32.png",
-    "favicon-16.png": "/favicon-16.png",
     "manifest.json": "/manifest.json",
+    "favicon-16.png": "/favicon-16.png",
     "serve.json": "/serve.json",
-    "main.b2940e76.js.map": "/static/js/main.b2940e76.js.map",
-    "959.a64e2a6a.js.map": "/static/js/959.a64e2a6a.js.map"
+    "main.89a7dc03.js.map": "/static/js/main.89a7dc03.js.map",
+    "813.312d9308.js.map": "/static/js/813.312d9308.js.map"
   },
   "entrypoints": [
-    "static/js/959.a64e2a6a.js",
-    "static/js/main.b2940e76.js"
+    "static/js/813.312d9308.js",
+    "static/js/main.89a7dc03.js"
   ]
 }

@@ -4,6 +4,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthOpen } from '../hooks/useAuth';
 import API_BASE_URL from '../services/config';
+import { OneSignal } from 'react-native-onesignal';
 
 const UserContext = createContext();
 
@@ -17,7 +18,6 @@ export const UserProvider = ({ children }) => {
                 const storedToken = await AsyncStorage.getItem('userToken');
                 if (storedToken) {
                     setUserToken(storedToken);
-
                 }
             } catch (error) {
                 console.error('Error loading user token:', error);
@@ -39,9 +39,11 @@ export const UserProvider = ({ children }) => {
     }
     const login = async (token) => {
         setUserToken(token);
+        OneSignal.User.addSms(token.toString())
         try {
             // Store the user token in async storage
             await AsyncStorage.setItem('userToken', token);
+
         } catch (error) {
             console.error('Error storing user token:', error);
         }
@@ -53,6 +55,7 @@ export const UserProvider = ({ children }) => {
         try {
             // Remove the user token from async storage
             await AsyncStorage.removeItem('userToken');
+            OneSignal.logout()
         } catch (error) {
             console.error('Error removing user token:', error);
         }
@@ -84,6 +87,7 @@ export const UserProvider = ({ children }) => {
         subscriptionStartDate = 'NA',
         location = {},
         locationMarked,
+        messagingToken,
     }) => {
         try {
             // Get the existing user info from async storage
@@ -112,7 +116,8 @@ export const UserProvider = ({ children }) => {
                 coins,
                 subscriptionStartDate,
                 location,
-                locationMarked
+                locationMarked,
+                messagingToken
             };
 
             await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));

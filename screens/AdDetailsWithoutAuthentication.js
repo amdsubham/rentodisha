@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import API_BASE_URL, { DOMAIN_URL } from '../services/config';
 import * as FileSystem from 'expo-file-system';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Import for larger icon
+import DownloadAppModal from '../components/DownloadAppModal';
 
 const amenitiesMapping = [
     { key: 'isFurnished', label: 'Furnished', icon: 'bed-outline' },
@@ -20,6 +21,7 @@ const amenitiesMapping = [
 ];
 
 const AdDetailsWithoutAuthentication = ({ route }) => {
+    const [showDownloadAppModal, setShowDownloadAppModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { userInfo } = useUser();
     const { adId } = route.params;
@@ -109,7 +111,12 @@ const AdDetailsWithoutAuthentication = ({ route }) => {
 
 
     const handleDirectMessage = () => {
-        navigation.navigate('HomeTabNavigator');
+        if (Platform.OS === "web") {
+            setShowDownloadAppModal(true)
+        }
+        else {
+            navigation.navigate('HomeTabNavigator');
+        }
     };
 
     const handleBackButton = () => {
@@ -209,7 +216,10 @@ const AdDetailsWithoutAuthentication = ({ route }) => {
                 </View>
 
             )}
-
+            <DownloadAppModal
+                visible={showDownloadAppModal}
+                onClose={() => setShowDownloadAppModal(false)}
+            />
         </SafeAreaView>
     );
 };

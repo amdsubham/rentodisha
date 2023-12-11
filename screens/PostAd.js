@@ -9,6 +9,7 @@ import {
     Switch,
     StyleSheet,
     Button,
+    ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import RNPickerSelect from 'react-native-picker-select';
@@ -96,6 +97,13 @@ export default function PostAdScreen({ route }) {
 
                 const s3ImageUrl = response.body.postResponse.location;
                 s3Images.push(s3ImageUrl);
+                // Inside the upload loop after a successful upload
+                Toast.show({
+                    type: 'success',
+                    text1: 'Image Uploaded',
+                    text2: 'Image has been successfully uploaded.',
+                });
+
             } catch (error) {
                 console.error('Error uploading image:', error);
                 // Show a toast message for the error
@@ -206,8 +214,20 @@ export default function PostAdScreen({ route }) {
         }
     };
 
+    const handleDeleteImage = (index) => {
+        const newImages = images.filter((_, i) => i !== index);
+        setImages(newImages);
+    };
+
+
     return (
         <ScrollView style={styles.container}>
+            {loading && (
+
+                <View style={styles.activityIndicatorContainer}>
+                    <ActivityIndicator size="large" color="#007DBC" />
+                </View>
+            )}
             <View style={styles.imageContainer}>
                 {/* Custom back button with Ionicons */}
                 <TouchableOpacity
@@ -225,8 +245,18 @@ export default function PostAdScreen({ route }) {
                 </TouchableOpacity>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     {images.map((imageUri, index) => (
-                        <Image key={index} source={{ uri: imageUri }} style={styles.image} />
+                        <View key={index} style={styles.imageWrapper}>
+                            <Image source={{ uri: imageUri }} style={styles.image} />
+                            <TouchableOpacity
+                                style={styles.deleteIcon}
+                                onPress={() => handleDeleteImage(index)}
+                            >
+                                <Ionicons name="close-circle" size={24} color="red" />
+                            </TouchableOpacity>
+                        </View>
                     ))}
+
+
                 </ScrollView>
             </View>
             <View style={styles.fieldContainer}>
@@ -449,26 +479,50 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
     },
+    imageWrapper: {
+        position: 'relative',
+        marginRight: 10,
+        alignItems: 'center', // Center items horizontally in the container
+        paddingBottom: 30,    // Add padding to accommodate delete icon at the bottom
+    },
+    deleteIcon: {
+        position: 'absolute',
+        bottom: 0,
+        alignSelf: 'center',
+    },
+    activityIndicatorContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)', // Optional: Add a white translucent background
+    },
 });
 
 
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#007DBC',  // Set the border color
         borderRadius: 5,
         paddingVertical: 12,
         paddingHorizontal: 10,
         paddingRight: 30, // to ensure the text is never behind the icon
         marginBottom: 20,
+        backgroundColor: '#f2f2f2', // Example style addition
     },
     inputAndroid: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#007DBC',  // Set the border color
         borderRadius: 5,
         paddingVertical: 10,
         paddingHorizontal: 10,
         paddingRight: 30, // to ensure the text is never behind the icon
         marginBottom: 20,
+        // backgroundColor: '#f2f2f2', // Example style addition
     },
+
 });

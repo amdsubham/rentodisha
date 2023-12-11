@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, RefreshControl, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, RefreshControl, Dimensions, ActivityIndicator, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { collection, getDocs, query } from 'firebase/firestore'
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
@@ -8,11 +8,14 @@ import API_BASE_URL from '../services/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { analytics, db } from '../firebase/firebase';
 import BannerCarousel from '../components/BannerCarousel';
-import { logEvent } from 'firebase/analytics';
+import { logEvent } from 'expo-firebase-analytics';
 import SkeletonLoader from "expo-skeleton-loader";
 const { height, width } = Dimensions.get('window');
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import DownloadAppModal from '../components/DownloadAppModal';
+import { customEvent } from 'vexo-analytics';
 const Home = () => {
+    const [showClose, setShowClose] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [ads, setAds] = useState([]);
     const [banners, setBanners] = useState([]);
@@ -21,11 +24,33 @@ const Home = () => {
     const [bannersLoading, setBannersLoading] = useState(true);
     const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'male', 'female'
     const [filteredAds, setFilteredAds] = useState([]);
+    const [showDownloadAppModal, setShowDownloadAppModal] = useState(false);
     useEffect(() => {
         fetchAds();
         fetchBanners()
 
     }, []);
+
+    useEffect(() => {
+        filterAds();
+    }, [ads, genderFilter]);
+
+    if (isLoading && refreshing && bannersLoading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+        )
+    }
+    useEffect(() => {
+        const bannerTimer = setTimeout(() => {
+            setShowClose(true);
+
+        }, 10000);
+
+        return () => clearTimeout(bannerTimer); // Clean up the timer
+    }, []);
+
 
     const fetchAds = async () => {
         try {
@@ -47,7 +72,13 @@ const Home = () => {
     };
 
     const navigateToPostAdScreen = () => {
-        navigation.navigate('PostAd');
+        if (Platform.OS === "web") {
+            setShowDownloadAppModal(true)
+        }
+        else {
+            navigation.navigate('PostAd');
+        }
+
     };
     const handleGenderFilterChange = (newFilter) => {
         setGenderFilter(newFilter);
@@ -98,31 +129,36 @@ const Home = () => {
 
     const handleAdPress = (ad) => {
         logEvent(analytics, "Post OnClick", (ad));
+        customEvent("Post OnClick", ad);
         navigation.navigate('SingleScreenAd', { adIds: ad?._id });
     };
 
     const onRefresh = useCallback(() => {
-        setRefreshing(true);
         fetchAds();
         fetchBanners();
     }, []);
 
-    useEffect(() => {
-        filterAds();
-    }, [ads, genderFilter]);
 
-    if (isLoading && refreshing && bannersLoading) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
-            </View>
-        )
-    }
+    const handleBannerClose = () => {
+        setShowClose(false);
+        setBanners([])
+    };
+
     return (
         <>
             <View style={styles.container}>
                 {bannersLoading && skeletonBanner()}
-                {!bannersLoading && banners.length > 0 && <BannerCarousel data={banners} />}
+                {!bannersLoading && banners.length > 0 && (
+                    <View style={styles.bannerContainer}>
+                        <BannerCarousel data={banners} />
+                        {showClose && <TouchableOpacity
+                            style={styles.bannerCloseButton}
+                            onPress={handleBannerClose}
+                        >
+                            <MaterialIcons name="close" size={24} color="white" />
+                        </TouchableOpacity>}
+                    </View>
+                )}
                 <View style={styles.filterButtonsContainer}>
                     <TouchableOpacity
                         style={[
@@ -152,6 +188,10 @@ const Home = () => {
                         <Text style={genderFilter === 'female' ? styles.filterTextActive : styles.filterText}>Female Only</Text>
                     </TouchableOpacity>
                 </View>
+                <DownloadAppModal
+                    visible={showDownloadAppModal}
+                    onClose={() => setShowDownloadAppModal(false)}
+                />
                 <FlatList
                     data={filteredAds.length ? filteredAds : ads}
                     keyExtractor={(item) => item._id}
@@ -358,6 +398,17 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         shadowOffset: { width: 0, height: 2 },
         opacity: 0.9 // Slightly transparent
+    },
+    bannerContainer: {
+        position: 'relative',
+    },
+    bannerCloseButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 5,
+        borderRadius: 12,
     },
 });
 

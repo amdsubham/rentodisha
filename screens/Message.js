@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,21 +6,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
-  Button,
-  Keyboard,
   TouchableOpacity,
-  Pressable,
   Modal,
   StyleSheet,
   ActivityIndicator,
   Alert,
-  RefreshControl,
+  Image,
 } from "react-native";
 import { WebView } from 'react-native-webview';
 import axios from "axios"; // Import Axios for making API requests
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import tw from "tailwind-rn";
 import ReceiverMessage from "../components/ReceiverMessage";
+import Icon from 'react-native-vector-icons/Ionicons';
 import SenderMessage from "../components/SenderMessage";
 import {
   addDoc,
@@ -36,22 +34,25 @@ import generateId from "../utils/generateIds";
 import API_BASE_URL from "../services/config";
 import { LinearGradient } from 'expo-linear-gradient';
 import ChatHeader from "../components/ChatHeader";
-import MessageSuggestion from "../components/MessageSuggestion";
+//import MessageSuggestion from "../components/MessageSuggestion";
 import { logEvent } from "firebase/analytics";
 import CoinModal from "../components/CoinModal";
+import { customEvent } from "vexo-analytics";
+import { isSuspiciousText } from "../utils/generalUtils";
+
 const MessageScreen = ({ route, navigation }) => {
   const flatListRef = useRef();
   const [userInfo, setUserInfo] = useState({ coins: 2 });
-  const { userInfo: userInfoFromAsync, setUserInfoToStore, fetchUserDetails } = useUser();
+  const { userInfo: userInfoFromAsync, setUserInfoToStore, fetchUserDetails, } = useUser();
   const { params: { userDetails } } = route;
+  const [showRequestDetailsModal, setShowRequestDetailsModal] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isConversationStarter, setConversationStarter] = useState(undefined);
-  const [combinedUid, setCombinedUid] = useState([]);
-  const [scrollToEnd, setScrollToEnd] = useState(false); // To scroll to the end of the chat
-  const [showModal, setShowModal] = useState(false); // State for the modal
+  const [combinedUid, setCombinedUid] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [isInputFocus, setInputFocus] = useState(false);
   const [showOneCointModal, setOneCointModal] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [webviewUrl, setWebviewUrl] = useState(
     "https://subham-routray.mojo.page/odicult-subscription"
   );
@@ -60,7 +61,7 @@ const MessageScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchUserInitialDetails();
-  }, [db, combinedUid]);
+  }, [db, combinedUid, userInfoFromAsync]);
 
   useEffect(() => {
     if (userInfo?.coins === 1) {
@@ -78,6 +79,14 @@ const MessageScreen = ({ route, navigation }) => {
     }
   }, [messages]);
 
+  const handleCloseRequestDetailsModal = () => {
+    setShowRequestDetailsModal(false);
+  };
+
+  const handleRequestDetails = () => {
+    handleCloseRequestDetailsModal();
+  };
+
 
   const fetchUserInitialDetails = async () => {
     try {
@@ -87,7 +96,7 @@ const MessageScreen = ({ route, navigation }) => {
         const combinedUid = generateId(userInfo.firebaseId, userDetails.id);
         setCombinedUid(combinedUid)
         setUserInfo(userInfo)
-        setMatchUsers(combinedUid)
+        setMatchUsers(combinedUid, userInfo)
       } else {
         console.error('Failed to fetch user details');
         setIsLoading(false); // Set loading to false even if there is an error
@@ -98,7 +107,7 @@ const MessageScreen = ({ route, navigation }) => {
     }
   };
 
-  const setMatchUsers = (combinedUid) => {
+  const setMatchUsers = (combinedUid, userInfo) => {
     const matchDocRef = doc(db, "matches", combinedUid);
     getDoc(matchDocRef)
       .then((docSnapshot) => {
@@ -138,32 +147,51 @@ const MessageScreen = ({ route, navigation }) => {
           id: doc.id,
           ...doc.data(),
         }));
+        if (fetchedMessages.length === 0 && !showModal) {
+          setShowRequestDetailsModal(true);
+          setShowModal(false)
+        }
         setMessages(fetchedMessages);
         setIsLoading(false);
-        // if (scrollToEnd) {
-        //   scrollFlatListToEnd();
-        // }
       }
     );
   }
 
   const scrollFlatListToEnd = () => {
-    // setScrollToEnd(true);
-    // setTimeout(() => setScrollToEnd(false), 200); // Delay to ensure scrolling to end works
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
-  const handleSendMessage = async () => {
-    if (input === "") {
+  const handleSendMessage = async (text) => {
+    const value = text || input
+    if (value === "") {
       return; // Do nothing if the input is empty
     }
-
+    if (isConversationStarter && isSuspiciousText(value) && userInfo.subscriptionStartDate === "NA") {
+      Alert.alert(
+        "Subscription Required",
+        "You need to subscribe to send phone numbers.",
+        [
+          {
+            text: "Subscribe",
+            onPress: () => {
+              setShowModal(true);
+            }
+          },
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel"
+          }
+        ],
+        { cancelable: false }
+      );
+      return;
+    }
     // If user is the conversation starter and doesn't have coins or subscription, show the modal
     if (isConversationStarter && userInfo.coins === 0 && userInfo.subscriptionStartDate === "NA") {
       setShowModal(true);
       return;
     }
-
     // Process to send message
     try {
       await addDoc(collection(db, "matches", combinedUid, "messages"), {
@@ -171,42 +199,51 @@ const MessageScreen = ({ route, navigation }) => {
         userId: userInfo.firebaseId,
         name: userInfo.name,
         photoURL: userInfo.pic || null,
-        message: input,
+        message: value,
       });
       setInput('')
-      // If the user is the conversation starter, deduct a coin after sending a message
+      setShowRequestDetailsModal(false)
+      try {
+        const oneSignalResponse = await axios.post(`${API_BASE_URL}/user/sendNotification`, {
+          userIds: [userDetails.phone],
+          message: `You have a new message from ${userInfo.name || ''}`,
+          data: {
+            type: "NEW_MESSAGE",
+            email: userInfo.email,
+            id: userInfo.firebaseId,
+            name: userInfo.name,
+            phone: userInfo.phoneNumber,
+            firebaseId: userInfo.firebaseId,
+            pic: userInfo.image || "", // Handle null values
+            // timestampSeconds: userInfo.timestamp.seconds.toString(),
+            // timestampNanoseconds: userInfo.timestamp.nanoseconds.toString(),
+          },
+        });
+      } catch (error) {
+        console.error("OneSignal Error:", error);
+      }
       if (isConversationStarter) {
-        // Check if the user has enough coins to send the message
         if (userInfo.coins > 0) {
           const updatedCoins = Math.max(userInfo.coins - 1, 0);  // Deduct one coin
           await axios.put(`${API_BASE_URL}/user/updateUserCoins/${userInfo.phoneNumber}`, {
             coins: userInfo.coins,
           });
-
-          // Update the local state with the new coins value
           setUserInfo((prevUserInfo) => ({
             ...prevUserInfo,
             coins: updatedCoins,
           }));
-
-          // Assuming setUserInfoToStore is to update the AsyncStorage or similar storage,
-          // it's important to ensure that it is successful and handle the case where it's not.
-          // For brevity, I'm not including error handling here.
           setUserInfoToStore({
             ...userInfo,
             coins: updatedCoins,
           });
         } else {
-          // Handle the case when the user does not have enough coins.
           Alert.alert("You do not have enough coins to send a message.");
           return;
         }
       }
-
       fetchMessages();
       setInput("");
-      scrollFlatListToEnd(); // Scroll to the end after sending a message
-
+      // scrollFlatListToEnd();
     } catch (error) {
       console.error("Error sending message or updating coins:", error);
       Alert.alert("Message sending failed");
@@ -215,6 +252,7 @@ const MessageScreen = ({ route, navigation }) => {
 
   const handleModalClose = () => {
     logEvent(analytics, "purchase banner changed");
+    customEvent("purchase banner changed");
     fetchUserDetails()
     setShowModal(false)
   }
@@ -223,20 +261,13 @@ const MessageScreen = ({ route, navigation }) => {
     setInput(text);
   };
 
-  if (isLoading) {
+  if (isLoading || userInfoFromAsync == null) {
     return (
       <LinearGradient colors={['#dddddd', '#005AAA']} style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="white" />
       </LinearGradient>
     );
   }
-
-
-  // const onRefresh = useCallback(() => {
-  //   setRefreshing(true);
-  //   // fetchUserInitialDetails();
-  //   //fetchMessages();
-  // }, []);
 
   const handleTakePremium = () => {
     setOneCointModal(false)
@@ -245,46 +276,41 @@ const MessageScreen = ({ route, navigation }) => {
   }
   return (
     <>
-      <ChatHeader coins={userInfo?.coins} userDetails={userDetails} navigation={navigation} />
-      <LinearGradient colors={['#dddddd', '#005AAA']} style={styles.container}>
-        <Pressable onPress={Keyboard.dismiss}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            inverted={true}
-            style={styles.flatList}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item: message }) =>
-              message.userId === userInfo.firebaseId ? (
-                <SenderMessage key={message.id} message={message} />
-              ) : (
-                <ReceiverMessage key={message.id} message={message} />
-              )
-            }
-            onContentSizeChange={scrollFlatListToEnd}
-          // refreshControl={
-          //   <RefreshControl
-          //     refreshing={refreshing}
-          //     onRefresh={onRefresh}
-          //     tintColor="white"
-          //   />
-          // }
-          />
-        </Pressable>
+      {<View style={{ height: '10%', backgroundColor: '#006699' }} >
+        <ChatHeader coins={userInfo?.coins} userDetails={userDetails} navigation={navigation} />
+      </View>}
+      <LinearGradient colors={['#dddddd', '#005AAA']} style={{ height: '80%' }} >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          contentContainerStyle={{
+            flexGrow: 1,
+          }}
+          inverted={true}
+          style={Platform.OS === 'web' && styles.flatList}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item: message }) =>
+            message.userId === userInfo.firebaseId ? (
+              <SenderMessage key={message.id} message={message} />
+            ) : (
+              <ReceiverMessage key={message.id} message={message} />
+            )
+          }
+        />
       </LinearGradient>
-      <LinearGradient colors={['#005AAA', '#dddddd',]} style={styles.inputSection}>
+      <LinearGradient colors={['#005AAA', '#dddddd',]} style={{ ...styles.inputSection, height: "10%" }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidingView}
           keyboardVerticalOffset={10}
         >
-          {
+          {/* {
             messages.length === 0 && (
               <View style={styles.suggestionsContainer}>
                 <MessageSuggestion onSelectSuggestion={handleSelectSuggestion} />
               </View>
             )
-          }
+          } */}
           <View style={[styles.messageInputContainer, isWeb && styles.messageInputContainerWeb]}>
             <TextInput
               multiline={true}
@@ -292,11 +318,13 @@ const MessageScreen = ({ route, navigation }) => {
               placeholder="Send a message"
               onChangeText={(value) => {
                 setInput(value)
-                logEvent(analytics, "message changed", value);
+                // logEvent(analytics, "message changed", value);
               }}
+              onFocus={() => setInputFocus(true)}
+              onBlur={() => setInputFocus(false)}
               value={input}
             />
-            <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
+            <TouchableOpacity onPress={() => handleSendMessage()} style={styles.sendButton}>
               <Text style={styles.sendButtonText}>Send</Text>
             </TouchableOpacity>
           </View>
@@ -322,13 +350,43 @@ const MessageScreen = ({ route, navigation }) => {
           </View>
         </View>
       </Modal>
-      <CoinModal
-        coins={userInfo?.coins}
-        onTakePremium={handleTakePremium}
-        isVisible={showOneCointModal}
-        onClose={() => setOneCointModal(false)}
+      {showRequestDetailsModal && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showRequestDetailsModal}
+          onRequestClose={handleCloseRequestDetailsModal}
+        >
+          <View style={modalStyles.container}>
+            <TouchableOpacity
+              style={modalStyles.closeButton}
+              onPress={handleCloseRequestDetailsModal}>
+              <Icon
+                name="close"
+                size={24}
+                color="#000"
+              />
+            </TouchableOpacity>
+            <Text style={modalStyles.title}>Start the Conversation</Text>
+            <Text style={modalStyles.messagePreview}>Hi there! I'm interested in your ad.</Text>
+            <Image style={{ height: 400, width: 200, bottom: 10 }} source={require('../assets/images/convInt.png')} />
+            <TouchableOpacity
+              style={modalStyles.sendButton}
+              onPress={() => handleSendMessage("Hi there! I'm interested in your ad.")}
+            >
+              <Text style={modalStyles.buttonText}>Send Message</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
 
-      />
+      {showOneCointModal &&
+        <CoinModal
+          coins={userInfo?.coins}
+          onTakePremium={handleTakePremium}
+          isVisible={showOneCointModal}
+          onClose={() => setOneCointModal(false)}
+        />}
     </>
   );
 };
@@ -372,6 +430,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   modalContent: {
     width: '80%',
@@ -386,6 +445,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderColor: '#E2E8F0',
+    backgroundColor: 'white',
   },
   modalTitle: {
     fontSize: 18,
@@ -409,7 +469,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white', // or any desired color
   },
   suggestionsContainer: {
-    position: 'fixed',
+    // position: 'fixed',
     bottom: 80, // You should adjust this value based on the height of messageInputContainer + some offset
     width: '100%',
     zIndex: 2,  // Ensure the suggestions are above the FlatList
@@ -425,11 +485,99 @@ const styles = StyleSheet.create({
     width: '100%', // Full width of the screen
     padding: 10, // Optional padding
   },
-
   flatList: {
-    // Removed paddingLeft and added flex: 1
     flex: 1, // Takes all available space except for the input section
+  },
+  modalCenteredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Semi-transparent background
+  },
+  modalView: {
+    margin: 20,
+    width: '80%', // Set width
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  modalCloseButton: {
+    position: "absolute",
+    right: 10,
+    top: 10,
   },
 });
 
+const modalStyles = StyleSheet.create({
+  container: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 6, // Increased for effect
+    elevation: 5,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  messagePreview: {
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 20,
+  },
+  imageStyle: {
+    height: 350,
+    width: 175,
+    marginBottom: 20,
+    alignSelf: 'center'
+  },
+  sendButton: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    shadowColor: "#000", // Optional shadow
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  buttonText: {
+    color: "white",
+    marginLeft: 10,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    padding: 10,
+  },
+});
 export default MessageScreen;

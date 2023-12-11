@@ -8,8 +8,9 @@ import API_BASE_URL from '../services/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { analytics, db } from '../firebase/firebase';
 import BannerCarousel from '../components/BannerCarousel';
-import { logEvent } from 'firebase/analytics';
+import { logEvent } from 'expo-firebase-analytics';
 import SkeletonLoader from "expo-skeleton-loader";
+import { customEvent } from 'vexo-analytics';
 const { height, width } = Dimensions.get('window');
 
 const HomeWithoutAuthentication = () => {
@@ -91,6 +92,7 @@ const HomeWithoutAuthentication = () => {
 
     const handleAdPress = (ad) => {
         logEvent(analytics, "Post OnClick", (ad));
+        customEvent("Post OnClick", (ad));
         navigation.navigate('AdDetailsWithoutAuthentication', { adId: ad._id });
     };
 

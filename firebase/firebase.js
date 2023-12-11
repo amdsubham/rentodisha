@@ -3,8 +3,8 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from "firebase/storage";
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
-import { getAnalytics, logEvent } from "firebase/analytics";
+//import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
     apiKey: "AIzaSyApunLilBsWG8YvyLL6hNdpWW0oB_JGNl8",
@@ -26,4 +26,6 @@ const auth = getAuth(app)
 const db = getFirestore()
 const storage = getStorage();
 const analytics = getAnalytics(app);
-export { analytics, app, auth, db, storage }
+//const messaging = getMessaging(app);
+
+export { analytics, app, auth, db, storage, }
